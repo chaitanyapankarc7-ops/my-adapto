@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Required for dialler intent and contacts -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <!--
+        Android 11+ requires declaring which apps you want to query.
+        This tells the OS we need to see all launchable apps (for the grid).
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.READ_WALLPAPER_INTERNAL"
+        tools:ignore="ProtectedPermissions" />
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyAdapto">
+
+        <!-- Entry point (splash/welcome) — app icon in launcher -->
+        <activity
+            android:name=".activity.GetStartedPage"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Profile selection -->
+        <activity android:name=".activity.InfoPage" android:exported="false" />
+
+        <!-- Accessibility settings (font/icon/contrast) -->
+        <activity android:name=".activity.SizeEditingPage" android:exported="false" />
+
+        <!-- Voice assistant screen -->
+        <activity android:name=".activity.VoiceAssitentPage" android:exported="false" />
+
+        <!-- Motor accessibility info -->
+        <activity android:name=".activity.AssitentInfoage" android:exported="false" />
+
+        <!--
+            HOME LAUNCHER — the actual adaptive home screen.
+            launchMode="singleTask": Android never makes a second instance.
+            stateNotNeeded="true": can be killed/restarted cleanly with no crash.
+            The HOME + DEFAULT intent categories are what makes Android recognise
+            this as a launcher option in the "Select home app" dialog.
+        -->
+        <activity
+            android:name=".launcher.HomeActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:theme="@style/Theme.MyAdapto.Launcher">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
+    </application>
+
+</manifest>
