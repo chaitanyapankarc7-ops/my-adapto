@@ -40,14 +40,17 @@ import com.tejyash.myadapto.model.AppInfo;
  * the user's own installed apps rather than a fixed placeholder icon.
  * SOS and Voice are Adapto's own in-app features, so they keep fixed icons.
  */
+import androidx.fragment.app.Fragment;
+import com.tejyash.myadapto.fregment.AppsFragment;
+import androidx.viewpager2.widget.ViewPager2;
+import com.tejyash.myadapto.adapter.HomePagerAdapter;
+
 public class HomeActivity extends AppCompatActivity
         implements AccessibilityManager.OnAccessibilityChangedListener {
 
-    private AppGridAdapter       adapter;
-    private GridLayoutManager    layoutManager;
-    private List<AppInfo>        allApps;
     private AccessibilityManager accessibilityManager;
     private AppManager           appManager;
+    private ViewPager2           viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,26 +61,16 @@ public class HomeActivity extends AppCompatActivity
         accessibilityManager = new AccessibilityManager(this);
         appManager            = new AppManager(this);
 
-        // ── App grid ────────────────────────────────────────────────
-        RecyclerView rvApps = findViewById(R.id.rv_apps);
-        adapter       = new AppGridAdapter(this);
-        layoutManager = new GridLayoutManager(this, accessibilityManager.getGridColumns());
-
-        rvApps.setLayoutManager(layoutManager);
-        rvApps.setAdapter(adapter);
-        rvApps.setHasFixedSize(false);
-
-        adapter.setOnAppClickListener(this::launchApp);
-
-        allApps = appManager.loadInstalledApps();
-        adapter.setApps(allApps);
-
         // ── Search bar ──────────────────────────────────────────────
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override public boolean onQueryTextSubmit(String q) { return false; }
             @Override public boolean onQueryTextChange(String q) {
-                adapter.setApps(appManager.filterApps(allApps, q));
+                // Find the AppsFragment and filter
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag("f1");
+                if (fragment instanceof AppsFragment) {
+                    ((AppsFragment) fragment).filterApps(q);
+                }
                 return true;
             }
         });
@@ -107,20 +100,7 @@ public class HomeActivity extends AppCompatActivity
     // ── AccessibilityManager.OnAccessibilityChangedListener ─────────
     @Override
     public void onAccessibilityChanged() {
-        int cols = accessibilityManager.getGridColumns();
-        if (layoutManager.getSpanCount() != cols) {
-            layoutManager.setSpanCount(cols);
-        }
-        adapter.notifyResized(); // refreshes font + icon sizes on all cells
-    }
-
-    private void launchApp(AppInfo app) {
-        boolean launched = appManager.launchApp(this, app);
-        if (!launched) {
-            // App was uninstalled since the grid was loaded — refresh
-            allApps = appManager.loadInstalledApps();
-            adapter.setApps(allApps);
-        }
+        // Accessibility changes should be handled by the fragments now
     }
 
     // ── Bottom dock ────────────────────────────────────────────────
