@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.tejyash.myadapto.R;
 import com.tejyash.myadapto.launcher.HomeActivity;
+import com.tejyash.myadapto.utils.Constants;
 
 public class GetStartedPage extends AppCompatActivity {
 
@@ -22,8 +23,8 @@ public class GetStartedPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences prefs = getSharedPreferences("AdaptoPrefs", MODE_PRIVATE);
-        boolean setupComplete   = prefs.getBoolean("setupComplete", false);
+        SharedPreferences prefs = getSharedPreferences(Constants.PREFS_ONBOARDING, MODE_PRIVATE);
+        boolean setupComplete   = prefs.getBoolean(Constants.KEY_SETUP_COMPLETE, false);
 
         if (setupComplete) {
             // User already did setup — go straight to the launcher home

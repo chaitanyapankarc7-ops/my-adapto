@@ -17,12 +17,14 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.tejyash.myadapto.R;
+import com.tejyash.myadapto.accessibility.AccessibilityManager;
 import com.tejyash.myadapto.accessibility.AccessibilityPreferences;
 import com.tejyash.myadapto.launcher.HomeActivity;
+import com.tejyash.myadapto.utils.Constants;
 
 public class SizeEditingPage extends AppCompatActivity {
 
-    private AccessibilityPreferences prefs;
+    private AccessibilityManager accessibilityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +32,7 @@ public class SizeEditingPage extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.size_editing_page);
 
-        prefs = AccessibilityPreferences.get(this);
+        accessibilityManager = new AccessibilityManager(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.button5), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -49,12 +51,12 @@ public class SizeEditingPage extends AppCompatActivity {
 
         // ── Restore saved values so seekbars reflect current prefs ──
         seekTextSize.setMax(3);
-        seekTextSize.setProgress(prefs.getFontStep());
-        tvLargeA.setTextSize(prefs.getFontSizeSp() + 10);
+        seekTextSize.setProgress(accessibilityManager.getFontStep());
+        tvLargeA.setTextSize(accessibilityManager.getFontSizeSp() + 10);
 
         seekIconSize.setMax(3);
-        seekIconSize.setProgress(prefs.getIconStep());
-        applyIconPreview(imgIconBig, prefs.getIconSizeDp());
+        seekIconSize.setProgress(accessibilityManager.getIconStep());
+        applyIconPreview(imgIconBig, accessibilityManager.getIconSizeDp());
 
         // ── Text size — save on every drag, update preview ──────────
         seekTextSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -62,7 +64,7 @@ public class SizeEditingPage extends AppCompatActivity {
             public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
                 float sp = AccessibilityPreferences.TEXT_SIZES[progress];
                 tvLargeA.setTextSize(sp + 10);
-                if (fromUser) prefs.setFontStep(progress); // persists + notifies HomeActivity
+                if (fromUser) accessibilityManager.setFontStep(progress); // persists + notifies HomeActivity
             }
             @Override public void onStartTrackingTouch(SeekBar s) {}
             @Override public void onStopTrackingTouch(SeekBar s)  {}
@@ -74,7 +76,7 @@ public class SizeEditingPage extends AppCompatActivity {
             public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
                 int dp = AccessibilityPreferences.ICON_SIZES_DP[progress];
                 applyIconPreview(imgIconBig, dp);
-                if (fromUser) prefs.setIconStep(progress); // persists + notifies HomeActivity
+                if (fromUser) accessibilityManager.setIconStep(progress); // persists + notifies HomeActivity
             }
             @Override public void onStartTrackingTouch(SeekBar s) {}
             @Override public void onStopTrackingTouch(SeekBar s)  {}
@@ -99,9 +101,9 @@ public class SizeEditingPage extends AppCompatActivity {
         Button btn = findViewById(R.id.btn);
         btn.setOnClickListener(v -> {
             // Mark setup complete so next cold start goes straight to HomeActivity
-            getSharedPreferences("AdaptoPrefs", MODE_PRIVATE)
+            getSharedPreferences(Constants.PREFS_ONBOARDING, MODE_PRIVATE)
                     .edit()
-                    .putBoolean("setupComplete", true)
+                    .putBoolean(Constants.KEY_SETUP_COMPLETE, true)
                     .apply();
 
             Intent intent = new Intent(SizeEditingPage.this, HomeActivity.class);

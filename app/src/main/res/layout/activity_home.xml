@@ -105,7 +105,7 @@
                 android:layout_height="44dp"
                 android:contentDescription="Gallery"
                 app:srcCompat="@drawable/images_removebg_preview__4_" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView android:id="@+id/dock_gallery_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Gallery" android:textColor="#FFFFFF" android:textSize="10sp" />
         </LinearLayout>
 
@@ -122,7 +122,7 @@
                 android:layout_height="44dp"
                 android:contentDescription="Phone"
                 app:srcCompat="@drawable/images_removebg_preview__3_" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView android:id="@+id/dock_phone_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Phone" android:textColor="#FFFFFF" android:textSize="10sp" />
         </LinearLayout>
 
@@ -139,7 +139,7 @@
                 android:layout_height="44dp"
                 android:contentDescription="Camera"
                 app:srcCompat="@drawable/download__5__removebg_preview" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView android:id="@+id/dock_camera_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Camera" android:textColor="#FFFFFF" android:textSize="10sp" />
         </LinearLayout>
 
@@ -156,7 +156,7 @@
                 android:layout_height="44dp"
                 android:contentDescription="Contacts"
                 app:srcCompat="@drawable/images__1__removebg_preview__1_" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView android:id="@+id/dock_contacts_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Contacts" android:textColor="#FFFFFF" android:textSize="10sp" />
         </LinearLayout>
 
