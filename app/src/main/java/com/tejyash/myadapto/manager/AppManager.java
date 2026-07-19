@@ -80,21 +80,47 @@ public class AppManager {
 
     /**
      * Resolves whichever app the device would actually launch for a given
-     * system action (e.g. ACTION_DIAL) and returns its real icon. Used by
-     * the launcher dock so "Phone"/"Camera"/"Gallery"/"Contacts" always show
-     * the user's own installed app instead of a fixed placeholder image.
-     * Returns null if no app on the device handles this action.
+     * system action (tries each probe intent in order, first match wins).
+     * Used by the launcher dock so "Phone"/"Camera"/"Gallery"/"Contacts"
+     * always point at the user's own default app. Returns null if nothing
+     * on the device handles any of the probes.
      */
-    public Drawable resolveIconFor(Intent intent) {
+    private ResolveInfo resolveInfo(Intent... probes) {
         PackageManager pm = appContext.getPackageManager();
-        ResolveInfo ri = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        return ri != null ? ri.loadIcon(pm) : null;
+        for (Intent probe : probes) {
+            ResolveInfo ri = pm.resolveActivity(probe, PackageManager.MATCH_DEFAULT_ONLY);
+            if (ri != null && ri.activityInfo != null) return ri;
+        }
+        return null;
     }
 
-    /** Same resolution as resolveIconFor(), but returns the app's display name. */
-    public String resolveLabelFor(Intent intent) {
-        PackageManager pm = appContext.getPackageManager();
-        ResolveInfo ri = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        return ri != null ? ri.loadLabel(pm).toString() : null;
+    public Drawable resolveIconFor(Intent... probes) {
+        ResolveInfo ri = resolveInfo(probes);
+        return ri != null ? ri.loadIcon(appContext.getPackageManager()) : null;
+    }
+
+    public String resolveLabelFor(Intent... probes) {
+        ResolveInfo ri = resolveInfo(probes);
+        return ri != null ? ri.loadLabel(appContext.getPackageManager()).toString() : null;
+    }
+
+    /**
+     * Builds an EXPLICIT intent (exact package + activity) pointing at
+     * whichever app resolveInfo() found. This is the key fix for the
+     * "app picker keeps popping up" bug: launching a plain implicit intent
+     * (e.g. ACTION_VIEW + image/*) makes Android show a chooser whenever
+     * more than one app *could* handle it. An explicit intent skips that
+     * chooser entirely and opens the resolved app directly — same app
+     * whose icon/label we already showed on the dock button.
+     * Returns null if nothing resolves (caller should fall back to the
+     * original implicit intent as a last resort).
+     */
+    public Intent resolveExplicitIntent(Intent... probes) {
+        ResolveInfo ri = resolveInfo(probes);
+        if (ri == null) return null;
+        Intent explicit = new Intent(probes[0]);
+        explicit.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
+        explicit.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return explicit;
     }
 }

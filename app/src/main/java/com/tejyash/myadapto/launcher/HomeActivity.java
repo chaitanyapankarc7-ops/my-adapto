@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -127,30 +126,28 @@ public class HomeActivity extends AppCompatActivity
     // ── Bottom dock ────────────────────────────────────────────────
     private void setupDock() {
         // Phone/Camera/Gallery/Contacts: resolve whichever app the device
-        // actually uses for that action, so the icon and label shown always
-        // match the user's real installed app instead of a fixed drawable.
+        // actually uses for that action, so the icon, label, AND the tap
+        // itself all point at the user's real installed app — no chooser
+        // dialog, no fixed placeholder.
         bindDockSlot(R.id.dock_phone, R.id.dock_phone_label,
-                new Intent(Intent.ACTION_DIAL),
-                v -> startActivity(new Intent(Intent.ACTION_DIAL)));
+                new Intent(Intent.ACTION_DIAL));
 
         bindDockSlot(R.id.dock_camera, R.id.dock_camera_label,
-                new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
-                v -> startActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE)));
+                new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
 
-        Intent galleryProbe = new Intent(Intent.ACTION_VIEW);
-        galleryProbe.setType("image/*");
+        // CATEGORY_APP_GALLERY asks the OS for its designated default
+        // gallery app directly — more reliable than probing ACTION_VIEW
+        // with a MIME type, which many apps can match and is ambiguous.
+        Intent galleryCategory = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_GALLERY);
+        Intent galleryFallback = new Intent(Intent.ACTION_VIEW).setType("image/*");
         bindDockSlot(R.id.dock_gallery, R.id.dock_gallery_label,
-                galleryProbe,
-                v -> {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setType("image/*");
-                    startActivity(i);
-                });
+                galleryCategory, galleryFallback);
 
+        // Same idea for Contacts — CATEGORY_APP_CONTACTS first.
+        Intent contactsCategory = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_CONTACTS);
+        Intent contactsFallback = new Intent(Intent.ACTION_VIEW, android.provider.ContactsContract.Contacts.CONTENT_URI);
         bindDockSlot(R.id.dock_contacts, R.id.dock_contacts_label,
-                new Intent(Intent.ACTION_VIEW, android.provider.ContactsContract.Contacts.CONTENT_URI),
-                v -> startActivity(new Intent(Intent.ACTION_VIEW,
-                        android.provider.ContactsContract.Contacts.CONTENT_URI)));
+                contactsCategory, contactsFallback);
 
         // SOS and Voice are Adapto's own features (not external apps to resolve),
         // so they keep their fixed custom icon and label.
@@ -165,24 +162,27 @@ public class HomeActivity extends AppCompatActivity
     }
 
     /**
-     * Resolves the real app icon/label for one dock slot. If no app on the
-     * device handles that action, the XML placeholder drawable/text is left
-     * as-is instead of being blanked out.
+     * Resolves the real app icon/label for one dock slot and wires the tap
+     * to an EXPLICIT intent pointing at that same resolved app — this is
+     * what stops Android's app-picker dialog from popping up on tap. If
+     * nothing resolves, the XML placeholder drawable/text stays as-is and
+     * the tap falls back to the original (first) probe intent.
      */
-    private void bindDockSlot(int iconId, int labelId, Intent resolveIntent,
-                              View.OnClickListener onClick) {
+    private void bindDockSlot(int iconId, int labelId, Intent... probes) {
         ImageView icon = findViewById(iconId);
         if (icon == null) return;
 
-        Drawable realIcon = appManager.resolveIconFor(resolveIntent);
+        Drawable realIcon = appManager.resolveIconFor(probes);
         if (realIcon != null) icon.setImageDrawable(realIcon);
 
         TextView label = findViewById(labelId);
         if (label != null) {
-            String realLabel = appManager.resolveLabelFor(resolveIntent);
+            String realLabel = appManager.resolveLabelFor(probes);
             if (realLabel != null) label.setText(realLabel);
         }
 
-        icon.setOnClickListener(onClick);
+        Intent explicit = appManager.resolveExplicitIntent(probes);
+        icon.setOnClickListener(v ->
+                startActivity(explicit != null ? explicit : probes[0]));
     }
 }
