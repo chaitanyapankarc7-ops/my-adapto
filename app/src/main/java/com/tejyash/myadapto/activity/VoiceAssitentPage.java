@@ -16,7 +16,7 @@ import java.util.Locale;
 
 import com.tejyash.myadapto.R;
 
-public class VoiceAssitentPage extends AppCompatActivity {
+public class    VoiceAssitentPage extends AppCompatActivity {
 
     TextView txtResult;
     TextToSpeech tts;
