@@ -1,23 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!--
+    HomeFragment layout — "Home" page of the pager.
+    Top to bottom: Adapto logo, a time-of-day greeting, a live clock,
+    then the bottom dock (Gallery / Phone / Camera / Contacts / SOS /
+    Voice) pinned to the bottom of this page.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <TextView
-        android:id="@+id/homeText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Home Page"
-        android:textSize="30sp"
-        android:textStyle="bold"
+    <ImageView
+        android:id="@+id/home_logo"
+        android:layout_width="120dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="16dp"
+        app:srcCompat="@drawable/img_11"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/home_greeting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Good morning"
+        android:textColor="#F7960DC7"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/home_logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/home_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="--:--"
+        android:textColor="#FFFFFF"
+        android:textSize="40sp"
+        app:layout_constraintTop_toBottomOf="@id/home_greeting"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom dock — same 6 quick-access slots as before, just living
+         in HomeFragment now instead of directly in the activity. -->
+    <LinearLayout
+        android:id="@+id/dock_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:background="#CC1A1A2E"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Gallery -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/dock_gallery"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Gallery"
+                app:srcCompat="@drawable/images_removebg_preview__4_" />
+            <TextView android:id="@+id/dock_gallery_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Gallery" android:textColor="#FFFFFF" android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Phone -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/dock_phone"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Phone"
+                app:srcCompat="@drawable/images_removebg_preview__3_" />
+            <TextView android:id="@+id/dock_phone_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Phone" android:textColor="#FFFFFF" android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Camera -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/dock_camera"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Camera"
+                app:srcCompat="@drawable/download__5__removebg_preview" />
+            <TextView android:id="@+id/dock_camera_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Camera" android:textColor="#FFFFFF" android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Contacts -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/dock_contacts"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Contacts"
+                app:srcCompat="@drawable/images__1__removebg_preview__1_" />
+            <TextView android:id="@+id/dock_contacts_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Contacts" android:textColor="#FFFFFF" android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- SOS -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/dock_sos"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="SOS"
+                app:srcCompat="@drawable/images__1__removebg_preview" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="SOS" android:textColor="#FF4444" android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Voice -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/dock_voice"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Voice"
+                app:srcCompat="@drawable/images_removebg_preview" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Voice" android:textColor="#FFFFFF" android:textSize="10sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
