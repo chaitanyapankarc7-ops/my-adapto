@@ -1,69 +1,106 @@
 package com.tejyash.myadapto.fregment;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.tejyash.myadapto.R;
+import com.tejyash.myadapto.accessibility.AccessibilityManager;
+import com.tejyash.myadapto.adapter.AppGridAdapter;
+import com.tejyash.myadapto.manager.AppManager;
+import com.tejyash.myadapto.model.AppInfo;
+
+import java.util.List;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link AppsFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * The Apps page — search bar + the full installed-app grid.
+ *
+ * All the actual work (reading PackageManager, filtering by label,
+ * launching an app) is delegated to AppManager — this class's only job
+ * is wiring that data to the RecyclerView, and reacting when a change
+ * in SizeEditingPage should resize the grid live.
+ *
+ * Flow: PackageManager → AppManager → AppInfo list → AppGridAdapter →
+ * RecyclerView → screen (same flow the roadmap describes; it just runs
+ * inside a fragment now instead of the activity).
  */
-public class AppsFragment extends Fragment {
+public class AppsFragment extends Fragment
+        implements AccessibilityManager.OnAccessibilityChangedListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private AppManager           appManager;
+    private AccessibilityManager accessibilityManager;
+    private AppGridAdapter       gridAdapter;
+    private GridLayoutManager    layoutManager;
+    private List<AppInfo>        allApps;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    public AppsFragment() { }
 
-    public AppsFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment BlankFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AppsFragment newInstance(String param1, String param2) {
-        AppsFragment fragment = new AppsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
+    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_app, container, false);
     }
 
-    public void filterApps(String q) {
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        appManager           = new AppManager(requireContext());
+        accessibilityManager = new AccessibilityManager(requireContext());
+
+        RecyclerView rv = view.findViewById(R.id.rv_apps);
+        layoutManager = new GridLayoutManager(requireContext(), accessibilityManager.getGridColumns());
+        rv.setLayoutManager(layoutManager);
+
+        gridAdapter = new AppGridAdapter(requireContext());
+        gridAdapter.setOnAppClickListener(app -> appManager.launchApp(requireContext(), app));
+        rv.setAdapter(gridAdapter);
+
+        allApps = appManager.loadInstalledApps();
+        gridAdapter.setApps(allApps);
+
+        SearchView searchView = view.findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override public boolean onQueryTextSubmit(String query) { return false; }
+            @Override public boolean onQueryTextChange(String query) {
+                filterApps(query);
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        accessibilityManager.setListener(this);
+        onAccessibilityChanged(); // pick up any change made while we were away (e.g. in Settings)
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        accessibilityManager.clearListener();
+    }
+
+    /** Fires whenever font size / icon size changes anywhere in the app. */
+    @Override
+    public void onAccessibilityChanged() {
+        layoutManager.setSpanCount(accessibilityManager.getGridColumns());
+        gridAdapter.notifyResized();
+    }
+
+    /** Case-insensitive filter — the rule itself lives in AppManager, this just re-binds the grid. */
+    public void filterApps(String query) {
+        if (allApps == null) return;
+        gridAdapter.setApps(appManager.filterApps(allApps, query));
     }
 }
