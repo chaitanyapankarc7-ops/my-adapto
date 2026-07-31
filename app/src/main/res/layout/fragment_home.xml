@@ -46,6 +46,120 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/weather_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/home_clock"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    <ImageView
+        android:id="@+id/img_weather"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_weather_sunny"
+        android:contentDescription="Weather" />
+
+    <TextView
+        android:id="@+id/txt_weather"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="28°C • Sunny"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"/>
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_battery"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="24dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="#AA1B1B2F"
+        app:layout_constraintTop_toBottomOf="@id/weather_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Battery Icon -->
+            <ImageView
+                android:id="@+id/img_battery"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_lock_idle_charging"
+                android:tint="#FFFFFF"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/txtBatteryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Battery"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                app:layout_constraintTop_toTopOf="@id/img_battery"
+                app:layout_constraintStart_toEndOf="@id/img_battery"
+                android:layout_marginStart="12dp"/>
+
+            <!-- Percentage -->
+            <TextView
+                android:id="@+id/txtBatteryPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="82%"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@id/txtBatteryTitle"
+                app:layout_constraintStart_toStartOf="@id/txtBatteryTitle"/>
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progressBattery"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="8dp"
+                android:max="100"
+                android:progress="82"
+                app:layout_constraintTop_toBottomOf="@id/txtBatteryPercent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"/>
+
+            <!-- Status -->
+            <TextView
+                android:id="@+id/txtBatteryStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Charging"
+                android:textColor="#7CFC00"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/progressBattery"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="12dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+
     <!-- Bottom dock — same 6 quick-access slots as before, just living
          in HomeFragment now instead of directly in the activity. -->
     <LinearLayout

@@ -5,8 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/infooo"
-    tools:context="AssitentInfoage">
+    android:background="@drawable/infooo">
 
     <!-- Sized as a percentage of screen width (1:1 ratio) instead of a fixed
          164dp width plus 123dp/124dp side margins — that combination needed

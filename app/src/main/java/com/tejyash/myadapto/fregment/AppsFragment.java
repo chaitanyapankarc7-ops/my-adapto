@@ -15,23 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.tejyash.myadapto.R;
 import com.tejyash.myadapto.accessibility.AccessibilityManager;
 import com.tejyash.myadapto.adapter.AppGridAdapter;
+import com.tejyash.myadapto.launcher.GridPreferences;
 import com.tejyash.myadapto.manager.AppManager;
 import com.tejyash.myadapto.model.AppInfo;
 
 import java.util.List;
 
-/**
- * The Apps page — search bar + the full installed-app grid.
- *
- * All the actual work (reading PackageManager, filtering by label,
- * launching an app) is delegated to AppManager — this class's only job
- * is wiring that data to the RecyclerView, and reacting when a change
- * in SizeEditingPage should resize the grid live.
- *
- * Flow: PackageManager → AppManager → AppInfo list → AppGridAdapter →
- * RecyclerView → screen (same flow the roadmap describes; it just runs
- * inside a fragment now instead of the activity).
- */
 public class AppsFragment extends Fragment
         implements AccessibilityManager.OnAccessibilityChangedListener {
 
@@ -46,7 +35,7 @@ public class AppsFragment extends Fragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                              Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_app, container, false);
     }
 
@@ -58,12 +47,20 @@ public class AppsFragment extends Fragment
         accessibilityManager = new AccessibilityManager(requireContext());
 
         RecyclerView rv = view.findViewById(R.id.rv_apps);
-        layoutManager = new GridLayoutManager(requireContext(), accessibilityManager.getGridColumns());
+
+        // Use GridPreferences for column count
+        int columns = GridPreferences.getColumns(requireContext());
+        layoutManager = new GridLayoutManager(requireContext(), columns);
         rv.setLayoutManager(layoutManager);
 
-        gridAdapter = new AppGridAdapter(requireContext());
+        // Page 0 = Apps page
+        gridAdapter = new AppGridAdapter(requireContext(), 0);
         gridAdapter.setOnAppClickListener(app -> appManager.launchApp(requireContext(), app));
+
         rv.setAdapter(gridAdapter);
+
+        // ↓ ONE LINE — this enables long-press drag and drop + auto-save
+        gridAdapter.attachDragToRecyclerView(rv);
 
         allApps = appManager.loadInstalledApps();
         gridAdapter.setApps(allApps);
@@ -82,7 +79,7 @@ public class AppsFragment extends Fragment
     public void onResume() {
         super.onResume();
         accessibilityManager.setListener(this);
-        onAccessibilityChanged(); // pick up any change made while we were away (e.g. in Settings)
+        onAccessibilityChanged();
     }
 
     @Override
@@ -91,14 +88,13 @@ public class AppsFragment extends Fragment
         accessibilityManager.clearListener();
     }
 
-    /** Fires whenever font size / icon size changes anywhere in the app. */
     @Override
     public void onAccessibilityChanged() {
-        layoutManager.setSpanCount(accessibilityManager.getGridColumns());
+        // Update columns when icon size changes
+        layoutManager.setSpanCount(GridPreferences.getColumns(requireContext()));
         gridAdapter.notifyResized();
     }
 
-    /** Case-insensitive filter — the rule itself lives in AppManager, this just re-binds the grid. */
     public void filterApps(String query) {
         if (allApps == null) return;
         gridAdapter.setApps(appManager.filterApps(allApps, query));
