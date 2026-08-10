@@ -1,0 +1,290 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.tejyash.myadapto"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+7-->INJECTED
+8        android:minSdkVersion="24"
+8-->INJECTED
+9        android:targetSdkVersion="36" />
+9-->INJECTED
+10
+11    <!-- Required for dialler intent and contacts -->
+12    <uses-permission android:name="android.permission.CALL_PHONE" />
+12-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:6:5-69
+12-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:6:22-66
+13
+14    <uses-feature
+14-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:7:5-88
+15        android:name="android.hardware.telephony"
+15-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:7:19-60
+16        android:required="false" />
+16-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:7:61-85
+17
+18    <!--
+19        Android 11+ requires declaring which apps you want to query.
+20        This tells the OS we need to see all launchable apps (for the grid).
+21    -->
+22    <queries>
+22-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:13:5-18:15
+23        <intent>
+23-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:14:9-17:18
+24            <action android:name="android.intent.action.MAIN" />
+24-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:15:13-65
+24-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:15:21-62
+25
+26            <category android:name="android.intent.category.LAUNCHER" />
+26-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:16:13-73
+26-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:16:23-70
+27        </intent>
+28    </queries>
+29
+30    <!--
+31        Belt-and-suspenders for real devices (some OEM skins are stricter
+32        than stock AOSP about package visibility even with <queries>
+33        declared correctly above). This permission is auto-granted at
+34        install time for apps not distributed via Play Store, so it's
+35        safe here — see AppManager.loadInstalledApps() for the fallback
+36        loading path that benefits from it.
+37    -->
+38    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+38-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:28:5-29:43
+38-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:28:22-74
+39    <uses-permission
+39-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:31:5-32:38
+40        android:name="android.permission.READ_EXTERNAL_STORAGE"
+40-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:31:22-77
+41        android:maxSdkVersion="32" />
+41-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:32:9-35
+42    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+42-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:33:5-76
+42-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:33:22-73
+43    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+43-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:34:5-72
+43-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:34:22-69
+44    <uses-permission android:name="android.permission.READ_WALLPAPER_INTERNAL" />
+44-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:35:5-36:47
+44-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:35:22-79
+45    <uses-permission android:name="android.permission.INTERNET" />
+45-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:37:5-66
+45-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:37:22-64
+46    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+46-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:38:5-78
+46-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:38:22-76
+47    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+47-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:39:5-80
+47-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:39:22-78
+48
+49    <permission
+49-->[androidx.core:core:1.18.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\4ad6f8d9551ba837eaac7b08fbb5d564\transformed\core-1.18.0\AndroidManifest.xml:22:5-24:47
+50        android:name="com.tejyash.myadapto.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+50-->[androidx.core:core:1.18.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\4ad6f8d9551ba837eaac7b08fbb5d564\transformed\core-1.18.0\AndroidManifest.xml:23:9-81
+51        android:protectionLevel="signature" />
+51-->[androidx.core:core:1.18.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\4ad6f8d9551ba837eaac7b08fbb5d564\transformed\core-1.18.0\AndroidManifest.xml:24:9-44
+52
+53    <uses-permission android:name="com.tejyash.myadapto.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+53-->[androidx.core:core:1.18.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\4ad6f8d9551ba837eaac7b08fbb5d564\transformed\core-1.18.0\AndroidManifest.xml:26:5-97
+53-->[androidx.core:core:1.18.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\4ad6f8d9551ba837eaac7b08fbb5d564\transformed\core-1.18.0\AndroidManifest.xml:26:22-94
+54
+55    <application
+55-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:40:5-106:19
+56        android:allowBackup="true"
+56-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:41:9-35
+57        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+57-->[androidx.core:core:1.18.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\4ad6f8d9551ba837eaac7b08fbb5d564\transformed\core-1.18.0\AndroidManifest.xml:28:18-86
+58        android:dataExtractionRules="@xml/data_extraction_rules"
+58-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:42:9-65
+59        android:debuggable="true"
+60        android:extractNativeLibs="false"
+60-->INJECTED
+61        android:fullBackupContent="@xml/backup_rules"
+61-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:43:9-54
+62        android:icon="@mipmap/ic_launcher"
+62-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:44:9-43
+63        android:label="@string/app_name"
+63-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:45:9-41
+64        android:roundIcon="@mipmap/ic_launcher_round"
+64-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:46:9-54
+65        android:supportsRtl="true"
+65-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:47:9-35
+66        android:testOnly="true"
+67        android:theme="@style/Theme.MyAdapto" >
+67-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:48:9-46
+68
+69        <!-- Entry point (splash/welcome) — app icon in launcher -->
+70        <activity
+70-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:51:9-58:20
+71            android:name="com.tejyash.myadapto.activity.GetStartedPage"
+71-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:52:13-52
+72            android:exported="true" >
+72-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:53:13-36
+73            <intent-filter>
+73-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:54:13-57:29
+74                <action android:name="android.intent.action.MAIN" />
+74-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:15:13-65
+74-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:15:21-62
+75
+76                <category android:name="android.intent.category.LAUNCHER" />
+76-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:16:13-73
+76-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:16:23-70
+77            </intent-filter>
+78        </activity>
+79
+80        <!-- Profile selection -->
+81        <activity
+81-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:61:9-80
+82            android:name="com.tejyash.myadapto.activity.InfoPage"
+82-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:61:19-52
+83            android:exported="false" />
+83-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:61:53-77
+84
+85        <!-- Accessibility settings (font/icon/contrast) -->
+86        <activity
+86-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:64:9-87
+87            android:name="com.tejyash.myadapto.activity.SizeEditingPage"
+87-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:64:19-59
+88            android:exported="false" />
+88-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:64:60-84
+89
+90        <!-- Voice assistant screen -->
+91        <activity
+91-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:67:9-89
+92            android:name="com.tejyash.myadapto.activity.VoiceAssitentPage"
+92-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:67:19-61
+93            android:exported="false" />
+93-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:67:62-86
+94
+95        <!-- Motor accessibility info -->
+96        <activity
+96-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:70:9-87
+97            android:name="com.tejyash.myadapto.activity.AssitentInfoage"
+97-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:70:19-59
+98            android:exported="false" />
+98-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:70:60-84
+99
+100        <!--
+101            HOME LAUNCHER — the actual adaptive home screen.
+102            launchMode="singleTask": Android never makes a second instance.
+103            stateNotNeeded="true": can be killed/restarted cleanly with no crash.
+104            The HOME + DEFAULT intent categories are what makes Android recognise
+105            this as a launcher option in the "Select home app" dialog.
+106        -->
+107        <activity
+107-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:79:9-92:20
+108            android:name="com.tejyash.myadapto.launcher.HomeActivity"
+108-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:80:13-50
+109            android:exported="true"
+109-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:81:13-36
+110            android:launchMode="singleTask"
+110-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:82:13-44
+111            android:stateNotNeeded="true"
+111-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:83:13-42
+112            android:theme="@style/Theme.MyAdapto.Launcher" >
+112-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:84:13-59
+113            <intent-filter>
+113-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:86:13-90:29
+114                <action android:name="android.intent.action.MAIN" />
+114-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:15:13-65
+114-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:15:21-62
+115
+116                <category android:name="android.intent.category.HOME" />
+116-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:88:17-73
+116-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:88:27-70
+117                <category android:name="android.intent.category.DEFAULT" />
+117-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:89:17-76
+117-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:89:27-73
+118            </intent-filter>
+119        </activity>
+120
+121        <!--
+122             Notification badges: user must manually enable this in
+123             Settings > Notification access. See NotificationAccessHelper.
+124        -->
+125        <service
+125-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:96:9-104:19
+126            android:name="com.tejyash.myadapto.notifications.AdaptoNotificationListenerService"
+126-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:97:13-76
+127            android:exported="false"
+127-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:100:13-37
+128            android:label="MyAdapto Notification Badges"
+128-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:98:13-57
+129            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
+129-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:99:13-87
+130            <intent-filter>
+130-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:101:13-103:29
+131                <action android:name="android.service.notification.NotificationListenerService" />
+131-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:102:17-99
+131-->C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\AndroidManifest.xml:102:25-96
+132            </intent-filter>
+133        </service>
+134
+135        <provider
+135-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+136            android:name="androidx.startup.InitializationProvider"
+136-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+137            android:authorities="com.tejyash.myadapto.androidx-startup"
+137-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+138            android:exported="false" >
+138-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+139            <meta-data
+139-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+140                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+140-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+141                android:value="androidx.startup" />
+141-->[androidx.emoji2:emoji2:1.3.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\b0f1c2175cd71ffcdc44616462060f48\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+142            <meta-data
+142-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\pranav\.gradle\caches\9.4.1\transforms\e6852aab13b98f0fa57309d3d53846b5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
+143                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+143-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\pranav\.gradle\caches\9.4.1\transforms\e6852aab13b98f0fa57309d3d53846b5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
+144                android:value="androidx.startup" />
+144-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\pranav\.gradle\caches\9.4.1\transforms\e6852aab13b98f0fa57309d3d53846b5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
+145            <meta-data
+145-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:29:13-31:52
+146                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+146-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:30:17-85
+147                android:value="androidx.startup" />
+147-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:31:17-49
+148        </provider>
+149
+150        <receiver
+150-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:34:9-52:20
+151            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+151-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:35:13-76
+152            android:directBootAware="false"
+152-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:36:13-44
+153            android:enabled="true"
+153-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:37:13-35
+154            android:exported="true"
+154-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:38:13-36
+155            android:permission="android.permission.DUMP" >
+155-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:39:13-57
+156            <intent-filter>
+156-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:40:13-42:29
+157                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+157-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:41:17-91
+157-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:41:25-88
+158            </intent-filter>
+159            <intent-filter>
+159-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:43:13-45:29
+160                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+160-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:44:17-85
+160-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:44:25-82
+161            </intent-filter>
+162            <intent-filter>
+162-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:46:13-48:29
+163                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+163-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:47:17-88
+163-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:47:25-85
+164            </intent-filter>
+165            <intent-filter>
+165-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:49:13-51:29
+166                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+166-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:50:17-95
+166-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\pranav\.gradle\caches\9.4.1\transforms\77c55d386cff29ac6311f81a4d9f7019\transformed\profileinstaller-1.4.0\AndroidManifest.xml:50:25-92
+167            </intent-filter>
+168        </receiver>
+169    </application>
+170
+171</manifest>

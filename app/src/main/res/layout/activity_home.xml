@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    HomeActivity layout — the "house".
+
+      - home_container fills the whole screen and hosts HomeFragment —
+        this is the ONLY thing visible on a normal day. Dock lives at the
+        very bottom of HomeFragment's own layout, so nothing here should
+        float on top of that bottom strip.
+      - drawer_handle: swipe up anywhere, or tap this pill, to open the
+        app drawer.
+      - overlay_container is empty/gone until the app drawer is opened
+        into it as a full-screen overlay.
+      - fab_settings (accessibility settings) sits up in the top corner,
+        clear of the dock and the swipe-up zone. Widgets toolbox removed
+        for now — will come back later as its own thing.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <!-- Dimming overlay to make icons/text readable on any wallpaper -->
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000" />
+
+    <!-- The Home page — the only screen the user lands on -->
+    <FrameLayout
+        android:id="@+id/home_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Discoverable handle: tap or swipe up from anywhere on Home to
+         open the app drawer. Made a bit bigger/brighter than before so
+         it's actually noticeable. -->
+    <View
+        android:id="@+id/drawer_handle"
+        android:layout_width="64dp"
+        android:layout_height="6dp"
+        android:layout_marginBottom="14dp"
+        android:background="#99FFFFFF"
+        android:contentDescription="Open app drawer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Full-screen overlay target for the app drawer.
+         Empty and invisible until HomeActivity opens it. -->
+    <FrameLayout
+        android:id="@+id/overlay_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:background="#1A1A2E"
+        android:elevation="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- FAB → Accessibility Settings. Small, tucked in the top-right
+         corner — well clear of the dock and the swipe-up gesture zone
+         at the bottom, unlike before. -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:fabSize="mini"
+        android:contentDescription="Accessibility Settings"
+        app:srcCompat="@android:drawable/ic_menu_manage"
+        app:tint="#FFFFFF"
+        app:backgroundTint="#2563EB"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

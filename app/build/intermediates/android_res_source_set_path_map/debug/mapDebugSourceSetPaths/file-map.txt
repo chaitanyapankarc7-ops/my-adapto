@@ -1,0 +1,8 @@
+com.tejyash.myadapto.app-pngs-0 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\build\generated\res\pngs\debug
+com.tejyash.myadapto.app-updated_navigation_xml-1 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\build\generated\updated_navigation_xml\debug
+com.tejyash.myadapto.app-packageDebugResources-2 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.tejyash.myadapto.app-packageDebugResources-3 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.tejyash.myadapto.app-debug-4 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.tejyash.myadapto.app-debug-5 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\debug\res
+com.tejyash.myadapto.app-main-6 C:\Users\pranav\Desktop\study\5TH SEM\Internship - Tejyash\my-adapto-fupdate\app\src\main\res
+gradleHome-0 C:\Users\pranav\.gradle

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No-op animation used as the "exit" half of a transaction pair, so the
+     screen underneath doesn't visibly move while the overlay slides. -->
+<translate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromYDelta="0"
+    android:toYDelta="0"
+    android:duration="220" />

@@ -1,0 +1,21 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.MyAdapto" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <item name="android:windowSplashScreenBackground">#0A0F1F</item>
+
+        <item name="android:windowSplashScreenAnimatedIcon">
+            @drawable/adlogo
+        </item>
+    </style>
+
+    <style name="Theme.MyAdapto" parent="Base.Theme.MyAdapto" />
+
+    <style name="Theme.MyAdapto.Launcher" parent="Theme.MyAdapto">
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+    </style>
+</resources>

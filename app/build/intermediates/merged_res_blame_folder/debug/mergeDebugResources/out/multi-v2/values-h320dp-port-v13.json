@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.tejyash.myadapto.app-mergeDebugResources-39:/values-h320dp-port-v13/values-h320dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\pranav\\.gradle\\caches\\9.4.1\\transforms\\129418e492ed58e511807006b8770065\\transformed\\material-1.14.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "63",
+                        "endOffsets": "114"
+                    }
+                }
+            ]
+        }
+    ]
+}
