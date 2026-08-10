@@ -1,0 +1,38 @@
+# Gradle build/cache files
+.gradle/
+**/build/
+
+# Android Studio / IntelliJ files
+.idea/
+*.iml
+
+# Local Android SDK configuration
+local.properties
+/gradle/gradle-daemon-jvm.properties
+
+# Native build files
+.externalNativeBuild/
+.cxx/
+
+# Generated app files
+captures/
+*.apk
+*.aab
+
+# Signing keys — never upload these
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+key.properties
+
+# Local secret/config files
+.env
+.env.*
+!.env.example
+secrets.properties
+
+# Windows/macOS clutter
+Thumbs.db
+.DS_Store
