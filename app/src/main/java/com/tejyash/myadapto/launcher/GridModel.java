@@ -1,39 +1,114 @@
 package com.tejyash.myadapto.launcher;
 
+
 /**
- * Represents one icon slot on the home screen grid.
+ * Represents one item placed on the Adapto home-screen grid.
  *
- * row, col  — position in the grid (0-based)
- * page      — which home screen page (0 = first page, 1 = second, etc.)
- * packageName — the app this slot points to (e.g. "com.google.android.gm")
+ * An item can be:
+ *  - an APP
+ *  - a CLOCK widget
+ *  - a BATTERY widget
+ *  - a WEATHER widget
+ *  - etc.
  *
- * We store packageName instead of the icon/label directly because
- * the icon and label are always fetched fresh from PackageManager —
- * that way they auto-update when the user updates an app.
+ * row, col  -> position inside the grid
+ * page      -> home-screen page
+ * packageName -> package name for APP items
  */
 public class GridModel {
 
-    public int    row;
-    public int    col;
-    public int    page;
+    public int row;
+    public int col;
+    public int page;
+
+    // Width and Height in grid cells
+    public int spanX = 1;
+    public int spanY = 1;
+
+    // Existing app package name.
+    // Widgets don't need a package name, so this can be empty.
     public String packageName;
 
-    public GridModel(int row, int col, int page, String packageName) {
-        this.row         = row;
-        this.col         = col;
-        this.page        = page;
-        this.packageName = packageName;
+    // New: tells us what kind of item this is.
+    public LauncherItemType type;
+
+
+    /**
+     * OLD constructor.
+     *
+     * We keep this so your existing code such as:
+     *
+     * new GridModel(row, col, page, packageName)
+     *
+     * continues working.
+     *
+     * Anything created this way is treated as an APP.
+     */
+    public GridModel(
+            int row,
+            int col,
+            int page,
+            String packageName
+    ) {
+        this(
+                row,
+                col,
+                page,
+                packageName,
+                LauncherItemType.APP
+        );
     }
 
-    // Unique key used to store this slot in SharedPreferences
-    // e.g.  "grid_0_2_1"  →  page 0, row 2, col 1
+
+    /**
+     * NEW constructor.
+     *
+     * Use this when creating apps or widgets.
+     */
+    public GridModel(
+            int row,
+            int col,
+            int page,
+            String packageName,
+            LauncherItemType type
+    ) {
+        this.row = row;
+        this.col = col;
+        this.page = page;
+        this.packageName = packageName;
+        this.type = type;
+    }
+
+
+    /**
+     * Returns the unique SharedPreferences key
+     * for this grid position.
+     *
+     * Example:
+     *
+     * grid_0_2_1
+     *
+     * means:
+     * page 0
+     * row 2
+     * column 1
+     */
     public String toKey() {
         return "grid_" + page + "_" + row + "_" + col;
     }
 
+
+    /**
+     * Returns a readable representation useful for debugging.
+     */
     @Override
     public String toString() {
-        return "GridModel{page=" + page + " row=" + row + " col=" + col
-                + " pkg=" + packageName + "}";
+        return "GridModel{" +
+                "page=" + page +
+                ", row=" + row +
+                ", col=" + col +
+                ", type=" + type +
+                ", packageName='" + packageName + '\'' +
+                '}';
     }
 }

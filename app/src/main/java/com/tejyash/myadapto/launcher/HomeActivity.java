@@ -3,9 +3,8 @@ package com.tejyash.myadapto.launcher;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.appcompat.app.AlertDialog;
 import com.tejyash.myadapto.R;
 import com.tejyash.myadapto.activity.SizeEditingPage;
 import com.tejyash.myadapto.fregment.AppsFragment;
@@ -68,19 +67,32 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.fab_settings).setOnClickListener(v -> showSettingsMenu());
     }
 
-    private void showSettingsMenu() {
-        new android.app.AlertDialog.Builder(this)
-                .setItems(new String[]{"Accessibility Settings", "Change Wallpaper"},
-                        (dialog, which) -> {
-                            switch (which) {
-                                case 0: startActivity(new Intent(this, SizeEditingPage.class)); break;
-                                case 1: openWallpaperPicker(); break;
-                            }
-                        })
-                .show();
+    public void showSettingsMenu() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_settings, null);
+
+        builder.setView(view);
+
+        AlertDialog dialog = builder.create();
+
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        view.findViewById(R.id.layoutAccessibility).setOnClickListener(v -> {
+            dialog.dismiss();
+            startActivity(new Intent(this, SizeEditingPage.class));
+        });
+
+        view.findViewById(R.id.layoutWallpaper).setOnClickListener(v -> {
+            dialog.dismiss();
+            openWallpaperPicker();
+        });
+
+        dialog.show();
     }
 
-    private void openWallpaperPicker() {
+    public void openWallpaperPicker() {
         try {
             startActivity(Intent.createChooser(
                     new Intent(Intent.ACTION_SET_WALLPAPER), "Set wallpaper"));
@@ -113,7 +125,7 @@ public class HomeActivity extends AppCompatActivity {
         overlayContainer.setVisibility(View.GONE);
     }
 
-    private void openOverlay(androidx.fragment.app.Fragment fragment, String backStackName) {
+    public void openOverlay(androidx.fragment.app.Fragment fragment, String backStackName) {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(
                         R.anim.slide_in_up, R.anim.stay_still,   // opening

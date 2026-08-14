@@ -20,10 +20,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.tejyash.myadapto.R;
 import com.tejyash.myadapto.accessibility.AccessibilityManager;
 import com.tejyash.myadapto.adapter.AppGridAdapter;
+import com.tejyash.myadapto.adapter.HomeGridAdapter;
 import com.tejyash.myadapto.launcher.GridPreferences;
 import com.tejyash.myadapto.manager.AppManager;
 import com.tejyash.myadapto.model.AppInfo;
+import com.tejyash.myadapto.launcher.LauncherItemType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppsFragment extends Fragment
@@ -147,8 +150,18 @@ public class AppsFragment extends Fragment
      * The actual drop is handled per-page in HomeFragment.handleDrop().
      */
     private void startDragForApp(AppInfo app, View itemView) {
-        ClipData.Item item = new ClipData.Item(app.packageName);
-        ClipData dragData = new ClipData(app.packageName,
+        String clipLabel = app.packageName;
+        String clipText  = app.packageName;
+
+        // If it's a widget, use the special WIDGET_CLIP_LABEL so HomeFragment
+        // knows to treat it as a widget drop instead of an app drop.
+        if (app.packageName != null && app.packageName.startsWith("widget:")) {
+            clipLabel = HomeGridAdapter.WIDGET_CLIP_LABEL;
+            clipText  = app.packageName.substring(7); // "CLOCK", "BATTERY", etc.
+        }
+
+        ClipData.Item item = new ClipData.Item(clipText);
+        ClipData dragData = new ClipData(clipLabel,
                 new String[]{ClipDescription.MIMETYPE_TEXT_PLAIN}, item);
 
         View.DragShadowBuilder shadow = new View.DragShadowBuilder(itemView);

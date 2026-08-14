@@ -21,4 +21,9 @@ public final class Constants {
     public static final String PREFS_ACCESSIBILITY = "adapto_accessibility";
     public static final String KEY_FONT_STEP        = "font_step";
     public static final String KEY_ICON_STEP        = "icon_step";
+
+    // ── Adaptive Features ──────────────────────────────────────────
+    public static final String KEY_COLOR_BLIND       = "color_blind_enabled";
+    public static final String KEY_FLASHLIGHT_ALERTS = "flashlight_alerts_enabled";
+    public static final String KEY_VIBRATE_ALERTS    = "vibrate_alerts_enabled";
 }

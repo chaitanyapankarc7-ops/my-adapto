@@ -1,13 +1,8 @@
 package com.tejyash.myadapto.fregment;
 
 import android.app.AlertDialog;
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,19 +12,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import com.tejyash.myadapto.launcher.LauncherItemType;
 
 import android.view.DragEvent;
-import android.content.IntentFilter;
-import android.os.BatteryManager;
-import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.tejyash.myadapto.R;
 import com.tejyash.myadapto.adapter.HomeGridAdapter;
 import com.tejyash.myadapto.adapter.HomePagesAdapter;
@@ -39,29 +34,14 @@ import com.tejyash.myadapto.launcher.GridPreferences;
 import com.tejyash.myadapto.manager.AppManager;
 import com.tejyash.myadapto.model.AppInfo;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 
 public class HomeFragment extends Fragment {
-
-    // 🔑 PASTE YOUR OPENWEATHERMAP API KEY HERE
-    private static final String WEATHER_API_KEY = "c58e01a80fcc649ad953376498228147";
 
     private AppManager      appManager;
     private HomePagesAdapter pagesAdapter;
     private ViewPager2      pager;
     private View            removePill;
-    private TextView   clockView;
-    private TextView   txtWeather;
-    private ImageView  imgWeather;
 
     // Drag-to-edge-reveals-adjacent-page support (see handleDrop)
     private final Handler edgeScrollHandler = new Handler(Looper.getMainLooper());
@@ -73,14 +53,6 @@ public class HomeFragment extends Fragment {
     // for seconds and still never fire. Real exits (drag exited/dropped/ended)
     // bypass this and cancel immediately.
     private Runnable      pendingLeaveGrace;
-
-    private final Handler  clockHandler = new Handler(Looper.getMainLooper());
-    private final Runnable clockTick = new Runnable() {
-        @Override public void run() {
-            updateClock();
-            clockHandler.postDelayed(this, 1000);
-        }
-    };
 
     public HomeFragment() { }
 
@@ -96,70 +68,47 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         appManager = new AppManager(requireContext());
-        clockView  = view.findViewById(R.id.home_clock);
-        txtWeather = view.findViewById(R.id.txt_weather);
-        imgWeather = view.findViewById(R.id.img_weather);
-
-        setGreeting(view.findViewById(R.id.home_greeting));
         setupDock(view);
+        setGreeting(view.findViewById(R.id.home_greeting));
         setupHomeGrid(view);
-        fetchWeather(); // 🌤️ load real weather
+        pager.setOnLongClickListener(v -> {
+            showEditMenu();
+            return true;
+        });
+        pager.setLongClickable(true);
 
-        // Warm AppManager's app-list cache off the main thread. First cold
-        // bind above may still do the heavy synchronous scan once (cache is
-        // empty at that point), but every bind after this completes —
-        // including new Home pages created mid-drag by the edge-scroll
-        // feature in handleDrop()/movePageForDrag() below — hits the cache
-        // instead of re-running queryIntentActivities()+icon composition,
-        // which was previously stalling the main thread long enough to
-        // starve the edge-scroll dwell timer and kill the drag.
+        // Floating Adaptive Features Button
+        view.findViewById(R.id.fab_adaptive_features).setOnClickListener(v -> {
+            if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
+                ((com.tejyash.myadapto.launcher.HomeActivity) getActivity())
+                        .openOverlay(new AdaptiveFeaturesFragment(), "adaptive_features");
+            }
+        });
+
+        // Fix: Long click on dock or empty areas at the bottom should also show the menu
+        view.findViewById(R.id.dock_container).setOnLongClickListener(v -> {
+            showEditMenu();
+            return true;
+        });
+        view.setOnLongClickListener(v -> {
+            showEditMenu();
+            return true;
+        });
+
         appManager.warmCacheAsync(this::refreshGrid);
 
-
-
-// ================= Battery Widget =================
-
-        TextView txtBatteryPercent = view.findViewById(R.id.txtBatteryPercent);
-        TextView txtBatteryStatus = view.findViewById(R.id.txtBatteryStatus);
-        ProgressBar progressBattery = view.findViewById(R.id.progressBattery);
-
-        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryIntent = requireContext().registerReceiver(null, intentFilter);
-
-        if (batteryIntent != null) {
-
-            int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-            int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-
-            int batteryPercent = (int) ((level / (float) scale) * 100);
-
-            progressBattery.setProgress(batteryPercent);
-            txtBatteryPercent.setText(batteryPercent + "%");
-
-            int status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-
-            boolean isCharging =
-                    status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                            status == BatteryManager.BATTERY_STATUS_FULL;
-
-            if (isCharging) {
-                txtBatteryStatus.setText("⚡ Charging");
-            } else {
-                txtBatteryStatus.setText("🔋 On Battery");
-            }
+        // Add default Clock widget if Home is empty
+        if (GridPreferences.loadAll(requireContext()).isEmpty()) {
+            GridPreferences.placeWidget(requireContext(), LauncherItemType.CLOCK, 0, 0, 0);
+            refreshGrid();
         }
-
-
-
-
-
-
+        
+        ensureDefaultWidgets();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        clockHandler.post(clockTick);
         refreshGrid(); // picks up notification badges that changed while another app was open
         promptNotificationAccessIfNeeded();
     }
@@ -180,13 +129,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        clockHandler.removeCallbacks(clockTick);
-    }
-
-    // ── Clock ──────────────────────────────────────────────────────
-    private void updateClock() {
-        String time = new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date());
-        clockView.setText(time);
     }
 
     private void setGreeting(TextView greetingView) {
@@ -196,92 +138,6 @@ public class HomeFragment extends Fragment {
         else if (hour < 17) greeting = "Good afternoon";
         else                greeting = "Good evening";
         greetingView.setText(greeting);
-    }
-
-    // ── Weather ────────────────────────────────────────────────────
-    private void fetchWeather() {
-        // Get location
-        LocationManager lm = (LocationManager) requireContext()
-                .getSystemService(android.content.Context.LOCATION_SERVICE);
-
-        if (ActivityCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // No permission yet — request it
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
-            return;
-        }
-
-        Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        if (location == null) location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        // Fallback to Mumbai if location still null
-        double lat = location != null ? location.getLatitude()  : 19.0760;
-        double lon = location != null ? location.getLongitude() : 72.8777;
-
-        double finalLat = lat;
-        double finalLon = lon;
-
-        // Run network call on background thread
-        new Thread(() -> {
-            try {
-                String urlStr = "https://api.openweathermap.org/data/2.5/weather"
-                        + "?lat=" + finalLat
-                        + "&lon=" + finalLon
-                        + "&appid=" + WEATHER_API_KEY
-                        + "&units=metric";
-
-                HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
-                conn.setConnectTimeout(5000);
-                conn.setReadTimeout(5000);
-
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) sb.append(line);
-                reader.close();
-
-                JSONObject json      = new JSONObject(sb.toString());
-                int    temp          = (int) json.getJSONObject("main").getDouble("temp");
-                String condition     = json.getJSONArray("weather")
-                        .getJSONObject(0).getString("main");
-                String weatherText   = temp + "°C • " + condition;
-                int    iconRes       = getWeatherIcon(condition);
-
-                // Update UI on main thread
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    if (txtWeather != null) txtWeather.setText(weatherText);
-                    if (imgWeather != null) imgWeather.setImageResource(iconRes);
-                });
-
-            } catch (Exception e) {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    if (txtWeather != null) txtWeather.setText("Weather unavailable");
-                });
-            }
-        }).start();
-    }
-
-    // Maps condition string → your drawable icon
-    private int getWeatherIcon(String condition) {
-        switch (condition.toLowerCase()) {
-            case "rain":
-            case "drizzle":
-            case "thunderstorm":
-            case "snow":
-            case "clouds":
-            default: return R.drawable.ic_weather_sunny;
-        }
-    }
-    // Called after user grants/denies location permission
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 101 && grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            fetchWeather(); // retry now that we have permission
-        }
     }
 
     // ── Bottom dock ────────────────────────────────────────────────
@@ -305,6 +161,8 @@ public class HomeFragment extends Fragment {
         // SOS and Voice dock buttons removed for now — will be added back later.
     }
 
+
+
     // ── Home grid — multi-page, real drag-and-drop target ────────────
     private void setupHomeGrid(View root) {
         pager = root.findViewById(R.id.vp_home_pages);
@@ -318,6 +176,8 @@ public class HomeFragment extends Fragment {
         // starts a drag directly there; hold-without-moving calls back here
         // to show the actual menu (needs appManager, which the adapter doesn't have).
         pagesAdapter.setOnAppMenuRequestListener(this::showHomeContextMenu);
+        pagesAdapter.setOnWidgetMenuRequestListener(this::showWidgetContextMenu);
+        pagesAdapter.setOnEmptySpaceLongClickListener(this::showEditMenu);
 
         // Each page gets a native OnDragListener so an app dragged from the
         // drawer (add) or from another Home icon (reposition) can be
@@ -363,28 +223,43 @@ public class HomeFragment extends Fragment {
             });
         }
 
-        // "Remove from Home" drop target — only reveals itself for
-        // reposition drags (see HomeGridAdapter.MOVE_CLIP_LABEL), not for
-        // fresh adds from the drawer (nothing to remove yet in that case).
+        // "Remove from Home" drop target
         removePill = root.findViewById(R.id.remove_from_home_pill);
         if (removePill != null) {
             removePill.setOnDragListener((v, event) -> {
                 switch (event.getAction()) {
                     case DragEvent.ACTION_DRAG_STARTED:
                         boolean isMove = event.getClipDescription() != null
-                                && HomeGridAdapter.MOVE_CLIP_LABEL.equals(
-                                event.getClipDescription().getLabel());
+                                && (HomeGridAdapter.MOVE_CLIP_LABEL.equals(event.getClipDescription().getLabel().toString())
+                                || HomeGridAdapter.WIDGET_CLIP_LABEL.equals(event.getClipDescription().getLabel().toString()));
                         if (isMove) removePill.setVisibility(View.VISIBLE);
                         return true;
+
                     case DragEvent.ACTION_DROP:
                         if (event.getClipData() == null || event.getClipData().getItemCount() == 0) return false;
-                        String pkg = String.valueOf(event.getClipData().getItemAt(0).getText());
-                        GridPreferences.removeApp(requireContext(), pkg);
-                        refreshGrid();
-                        return true;
+                        String label = event.getClipDescription() != null ? event.getClipDescription().getLabel().toString() : "";
+                        String text = String.valueOf(event.getClipData().getItemAt(0).getText());
+
+                        if (HomeGridAdapter.MOVE_CLIP_LABEL.equals(label)) {
+                            GridPreferences.removeApp(requireContext(), text);
+                            refreshGrid();
+                            return true;
+                        } else if (HomeGridAdapter.WIDGET_CLIP_LABEL.equals(label)) {
+                            try {
+                                LauncherItemType type = LauncherItemType.valueOf(text);
+                                GridPreferences.removeWidget(requireContext(), type);
+                                refreshGrid();
+                                return true;
+                            } catch (Exception e) {
+                                return false;
+                            }
+                        }
+                        return false;
+
                     case DragEvent.ACTION_DRAG_ENDED:
                         removePill.setVisibility(View.GONE);
                         return true;
+
                     default:
                         return true;
                 }
@@ -401,6 +276,7 @@ public class HomeFragment extends Fragment {
     private boolean handleDrop(DragEvent event, HomeGridAdapter gridAdapter, RecyclerView recyclerView) {
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
+                if (pager != null) pager.setUserInputEnabled(false); // Lock pager during drag
                 android.util.Log.d("HomeFragment", "ACTION_DRAG_STARTED on page " + gridAdapter.getPage());
                 return true; // must return true here to keep receiving events for this drag
 
@@ -442,7 +318,8 @@ public class HomeFragment extends Fragment {
                     android.util.Log.w("HomeFragment", "ACTION_DROP had no clip data");
                     return false;
                 }
-                String packageName = String.valueOf(event.getClipData().getItemAt(0).getText());
+                String label = event.getClipDescription() != null ? event.getClipDescription().getLabel().toString() : "";
+                String content = String.valueOf(event.getClipData().getItemAt(0).getText());
 
                 int columns = gridAdapter.getColumns();
                 int row, col;
@@ -477,9 +354,21 @@ public class HomeFragment extends Fragment {
                     row = clamp((int) (event.getY() / cellH), 0, rows - 1);
                     android.util.Log.d("HomeFragment", "hit-test missed, falling back to estimate");
                 }
-                android.util.Log.d("HomeFragment", "placing " + packageName + " at row=" + row + " col=" + col);
+                android.util.Log.d("HomeFragment", "placing " + content + " at row=" + row + " col=" + col + " label=" + label);
 
-                gridAdapter.acceptDrop(packageName, appManager, row, col);
+                if (HomeGridAdapter.MOVE_CLIP_LABEL.equals(label)) {
+                    gridAdapter.acceptDrop(content, appManager, row, col);
+                } else if (HomeGridAdapter.WIDGET_CLIP_LABEL.equals(label)) {
+                    try {
+                        LauncherItemType type = LauncherItemType.valueOf(content);
+                        gridAdapter.acceptWidgetDrop(type, appManager, row, col);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                } else {
+                    // Drawer add (or unknown) — assume it's an app package name
+                    gridAdapter.acceptDrop(content, appManager, row, col);
+                }
 
                 // DIAGNOSTIC: dump exactly what's now saved for this page, and
                 // which page is actually visible right now, so we can tell
@@ -505,7 +394,10 @@ public class HomeFragment extends Fragment {
                 return true;
 
             case DragEvent.ACTION_DRAG_ENDED:
+                if (pager != null) pager.setUserInputEnabled(true); // Unlock pager
                 cancelPendingEdgeScroll();
+                // Ensure everything is opaque again after any drag
+                refreshGrid();
                 return true;
 
             default:
@@ -588,6 +480,15 @@ public class HomeFragment extends Fragment {
      * currently-bound page. Called on resume and whenever the app drawer
      * is dismissed back to this screen (in case a drag/drop just happened).
      */
+
+
+    private void ensureDefaultWidgets() {
+        if (!GridPreferences.hasWidget(requireContext(), LauncherItemType.CLOCK)) {
+            int[] slot = GridPreferences.findFirstEmptySlot(requireContext());
+            GridPreferences.placeWidget(requireContext(), LauncherItemType.CLOCK, slot[0], slot[1], slot[2]);
+            refreshGrid();
+        }
+    }
     public void refreshGrid() {
         if (pagesAdapter != null) {
             pagesAdapter.setPageCount(GridPreferences.getPageCount(requireContext()));
@@ -595,23 +496,25 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    /** Hold-without-moving on a Home icon calls back here (see HomeGridAdapter). */
     private void showHomeContextMenu(AppInfo app) {
         new AlertDialog.Builder(requireContext())
                 .setTitle(app.label)
-                .setItems(new String[]{"App Info", "Remove from Home", "Uninstall"},
+                .setItems(new String[]{"App Info", "Delete from Home", "Uninstall"},
                         (dialog, which) -> {
                             switch (which) {
                                 case 0: appManager.openAppInfo(requireContext(), app); break;
                                 case 1:
                                     GridPreferences.removeApp(requireContext(), app.packageName);
                                     refreshGrid();
+                                    Toast.makeText(requireContext(), "App removed", Toast.LENGTH_SHORT).show();
                                     break;
                                 case 2: appManager.requestUninstall(requireContext(), app); break;
                             }
                         })
                 .show();
     }
+
+
 
     /**
      * Binds one dock slot. If a previous session left an override saved
@@ -681,10 +584,116 @@ public class HomeFragment extends Fragment {
                 .show();
     }
 
+    private void showWidgetContextMenu(LauncherItemType type) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(type.name())
+                .setItems(new String[]{"Resize Widget", "Delete Widget", "Cancel"},
+                        (dialog, which) -> {
+                            if (which == 0) {
+                                showResizeDialog(type);
+                            } else if (which == 1) {
+                                GridPreferences.removeWidget(requireContext(), type);
+                                refreshGrid();
+                                Toast.makeText(requireContext(), "Widget deleted", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                .show();
+    }
+
+    private void showResizeDialog(LauncherItemType type) {
+        int columns = GridPreferences.getColumns(requireContext());
+        String[] options = new String[columns];
+        for (int i = 0; i < columns; i++) {
+            options[i] = (i + 1) + " Column" + (i > 0 ? "s" : "");
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Select Width")
+                .setItems(options, (dialog, which) -> {
+                    int newSpan = which + 1;
+                    updateWidgetSpan(type, newSpan);
+                })
+                .show();
+    }
+
+    private void updateWidgetSpan(LauncherItemType type, int newSpan) {
+        for (GridModel item : GridPreferences.loadAll(requireContext())) {
+            if (item.type == type) {
+                item.spanX = newSpan;
+                GridPreferences.saveSlot(requireContext(), item);
+                refreshGrid();
+                break;
+            }
+        }
+    }
+
     private AppInfo findInstalledApp(String packageName) {
         for (AppInfo a : appManager.loadInstalledApps()) {
             if (a.packageName.equals(packageName)) return a;
         }
         return null;
     }
+
+    private void showEditMenu() {
+        // Vibrate for feedback
+        if (getView() != null) {
+            getView().performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+        }
+
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_home, null);
+        bottomSheetDialog.setContentView(view);
+
+        view.findViewById(R.id.cardWallpaper).setOnClickListener(v -> {
+            if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
+                ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).openWallpaperPicker();
+            }
+            bottomSheetDialog.dismiss();
+        });
+
+        view.findViewById(R.id.cardWidgets).setOnClickListener(v -> {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Add Widget")
+                    .setItems(new String[]{"Clock", "Battery", "Weather", "More Tools..."},
+                            (dialog, which) -> {
+                                if (which == 3) {
+                                    if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
+                                        ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).openOverlay(new WidgetsFragment(), "widgets");
+                                    }
+                                } else {
+                                    LauncherItemType type;
+                                    if (which == 0)      type = LauncherItemType.CLOCK;
+                                    else if (which == 1) type = LauncherItemType.BATTERY;
+                                    else                type = LauncherItemType.WEATHER;
+
+                                    int currentPage = pager != null ? pager.getCurrentItem() : 0;
+                                    int[] slot = GridPreferences.findFirstEmptySlotOnPage(requireContext(), currentPage);
+                                    
+                                    if (slot != null) {
+                                        GridPreferences.placeWidget(requireContext(), type, currentPage, slot[0], slot[1]);
+                                        Toast.makeText(requireContext(), type.name() + " added", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        // Page is full, find first anywhere
+                                        int[] globalSlot = GridPreferences.findFirstEmptySlot(requireContext());
+                                        if (globalSlot != null) {
+                                            GridPreferences.placeWidget(requireContext(), type, globalSlot[0], globalSlot[1], globalSlot[2]);
+                                        }
+                                    }
+                                    refreshGrid();
+                                }
+                            })
+                    .show();
+            bottomSheetDialog.dismiss();
+        });
+
+        view.findViewById(R.id.cardSettings).setOnClickListener(v -> {
+            if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
+                ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).showSettingsMenu();
+            }
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.show();
+    }
 }
+
