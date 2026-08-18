@@ -2,6 +2,8 @@ package com.tejyash.myadapto.accessibility;
 
 import android.content.Context;
 
+import com.tejyash.myadapto.launcher.GridPreferences;
+
 /**
  * Business-logic layer over AccessibilityPreferences. Activities talk to
  * this class, not to AccessibilityPreferences directly — it keeps rules
@@ -19,10 +21,12 @@ public class AccessibilityManager implements AccessibilityPreferences.OnPrefsCha
      */
     private static final int[] GRID_COLUMNS_BY_STEP = { 5, 4, 4, 3 };
 
+    private final Context context;
     private final AccessibilityPreferences prefs;
     private OnAccessibilityChangedListener listener;
 
     public AccessibilityManager(Context ctx) {
+        this.context = ctx.getApplicationContext();
         this.prefs = AccessibilityPreferences.get(ctx);
     }
 
@@ -37,7 +41,7 @@ public class AccessibilityManager implements AccessibilityPreferences.OnPrefsCha
 
     public void clearListener() {
         this.listener = null;
-        prefs.clearListener();
+        prefs.clearListener(this);
     }
 
     @Override
@@ -53,11 +57,27 @@ public class AccessibilityManager implements AccessibilityPreferences.OnPrefsCha
 
     /** Derives the app grid's column count from the current icon/font size. */
     public int getGridColumns() {
-        int step = Math.max(prefs.getIconStep(), prefs.getFontStep());
+        return gridColumnsFor(prefs.getIconStep(), prefs.getFontStep());
+    }
+
+    private int gridColumnsFor(int iconStep, int fontStep) {
+        int step = Math.max(iconStep, fontStep);
         return GRID_COLUMNS_BY_STEP[step];
     }
 
     // ── Writes ──────────────────────────────────────────────────────
-    public void setFontStep(int step) { prefs.setFontStep(step); }
-    public void setIconStep(int step) { prefs.setIconStep(step); }
+    // Grid columns are pushed to GridPreferences *before* the prefs
+    // setter fires its change notification, so that by the time
+    // AppsFragment/HomeFragment react to onAccessibilityChanged(),
+    // GridPreferences.getColumns() already reflects the new size —
+    // otherwise the grid listeners would read the stale column count.
+    public void setFontStep(int step) {
+        GridPreferences.saveColumns(context, gridColumnsFor(prefs.getIconStep(), step));
+        prefs.setFontStep(step);
+    }
+
+    public void setIconStep(int step) {
+        GridPreferences.saveColumns(context, gridColumnsFor(step, prefs.getFontStep()));
+        prefs.setIconStep(step);
+    }
 }
