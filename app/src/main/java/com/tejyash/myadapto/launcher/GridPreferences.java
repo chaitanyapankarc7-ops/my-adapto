@@ -593,8 +593,8 @@ public class GridPreferences {
                 type
         );
         
-        // Default widget width is 2
-        widget.spanX = 2;
+        // Default widget width is 1 (occupies one block)
+        widget.spanX = 1;
 
 
         // Displacement logic
@@ -658,7 +658,7 @@ public class GridPreferences {
             widget.spanX = existing.spanX;
             widget.spanY = existing.spanY;
         } else {
-            widget.spanX = 2;
+            widget.spanX = 1;
         }
 
 

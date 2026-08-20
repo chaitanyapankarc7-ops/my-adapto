@@ -40,6 +40,14 @@ public class HomeActivity extends AppCompatActivity {
                     .commit();
         }
 
+        // Listen for accessibility changes (like color blind theme toggle)
+        com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(this).setListener(() -> {
+            androidx.fragment.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.home_container);
+            if (fragment instanceof HomeFragment) {
+                ((HomeFragment) fragment).refreshGrid();
+            }
+        });
+
         // Re-hide the overlay once its fragment is popped off the back stack
         // (back press/gesture, or automatically when a drag starts — see
         // AppsFragment.startDragForApp), so we're not left with an empty
@@ -59,6 +67,12 @@ public class HomeActivity extends AppCompatActivity {
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
                 overlayContainer.setVisibility(View.GONE);
+                
+                // Refresh home screen to apply any adaptive feature changes
+                androidx.fragment.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.home_container);
+                if (fragment instanceof HomeFragment) {
+                    ((HomeFragment) fragment).refreshGrid();
+                }
             }
         });
 
@@ -105,7 +119,6 @@ public class HomeActivity extends AppCompatActivity {
     // ── Opening overlays ──────────────────────────────────────────────
     public void openAppDrawer() {
         if (overlayContainer.getVisibility() == View.VISIBLE) return; // already open
-        overlayContainer.setVisibility(View.VISIBLE);
         openOverlay(new AppsFragment(), "apps_drawer");
     }
 
@@ -126,6 +139,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void openOverlay(androidx.fragment.app.Fragment fragment, String backStackName) {
+        overlayContainer.setVisibility(View.VISIBLE);
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(
                         R.anim.slide_in_up, R.anim.stay_still,   // opening

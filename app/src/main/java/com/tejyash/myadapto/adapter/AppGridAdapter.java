@@ -183,7 +183,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<AppGridAdapter.AppViewH
     @Override
     public void onBindViewHolder(@NonNull AppViewHolder holder, int position) {
         AppInfo app = apps.get(position);
-        holder.bind(app, prefs.getFontSizeSp(), prefs.getIconSizeDp());
+        holder.bind(app, prefs.getFontSizeSp(), prefs.getIconSizeDp(), prefs.isColorBlindEnabled());
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) clickListener.onAppClick(app);
         });
@@ -212,11 +212,21 @@ public class AppGridAdapter extends RecyclerView.Adapter<AppGridAdapter.AppViewH
             tvBadge = itemView.findViewById(R.id.tv_badge);
         }
 
-        void bind(AppInfo app, float fontSp, int iconDp) {
+        void bind(AppInfo app, float fontSp, int iconDp, boolean highContrast) {
             tvLabel.setText(app.label);
             ivIcon.setImageDrawable(app.icon);
 
             tvLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSp);
+
+            if (highContrast) {
+                tvLabel.setTextColor(android.graphics.Color.WHITE);
+                tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+                itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            } else {
+                tvLabel.setTextColor(android.graphics.Color.WHITE);
+                tvLabel.setTypeface(null, android.graphics.Typeface.NORMAL);
+                itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            }
 
             int px = dpToPx(itemView.getContext(), iconDp);
             ViewGroup.LayoutParams lp = ivIcon.getLayoutParams();

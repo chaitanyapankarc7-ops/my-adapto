@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.TypedValue;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import com.tejyash.myadapto.launcher.LauncherItemType;
 
 import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +56,8 @@ public class HomeFragment extends Fragment {
     // bypass this and cancel immediately.
     private Runnable      pendingLeaveGrace;
 
+    private boolean isMenuShowing = false;
+
     public HomeFragment() { }
 
     @Nullable
@@ -71,12 +75,7 @@ public class HomeFragment extends Fragment {
         setupDock(view);
         setGreeting(view.findViewById(R.id.home_greeting));
         setupHomeGrid(view);
-        pager.setOnLongClickListener(v -> {
-            showEditMenu();
-            return true;
-        });
-        pager.setLongClickable(true);
-
+        
         // Floating Adaptive Features Button
         view.findViewById(R.id.fab_adaptive_features).setOnClickListener(v -> {
             if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
@@ -85,15 +84,8 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Fix: Long click on dock or empty areas at the bottom should also show the menu
-        view.findViewById(R.id.dock_container).setOnLongClickListener(v -> {
-            showEditMenu();
-            return true;
-        });
-        view.setOnLongClickListener(v -> {
-            showEditMenu();
-            return true;
-        });
+        // Use custom hold logic for the background to match the hold requirement
+        setupBackgroundHold(view);
 
         appManager.warmCacheAsync(this::refreshGrid);
 
@@ -223,7 +215,7 @@ public class HomeFragment extends Fragment {
             });
         }
 
-        // "Remove from Home" drop target
+          // "Remove from Home" drop target
         removePill = root.findViewById(R.id.remove_from_home_pill);
         if (removePill != null) {
             removePill.setOnDragListener((v, event) -> {
@@ -285,8 +277,8 @@ public class HomeFragment extends Fragment {
                 // next/previous page (creating a new one on the right if
                 // needed) — matches dragging an icon off either side of the
                 // screen to move it between pages on a normal launcher.
-                float rightEdge = recyclerView.getWidth() * 0.80f; // last ~20% of width
-                float leftEdge  = recyclerView.getWidth() * 0.20f; // first ~20% of width
+                float rightEdge = recyclerView.getWidth() * 0.75f; // last ~25% of width
+                float leftEdge  = recyclerView.getWidth() * 0.25f; // first ~25% of width
                 if (event.getX() > rightEdge) {
                     android.util.Log.d("HomeFragment", "in RIGHT edge zone, x=" + event.getX() + " width=" + recyclerView.getWidth());
                     cancelLeaveGrace(); // back in the zone — let the dwell timer keep running
@@ -421,7 +413,7 @@ public class HomeFragment extends Fragment {
             pendingEdgeScroll = null;
             pendingEdgeScrollDirection = null;
         };
-        edgeScrollHandler.postDelayed(pendingEdgeScroll, 550);
+        edgeScrollHandler.postDelayed(pendingEdgeScroll, 450);
     }
 
     /** direction: +1 advances to the next page (growing one if needed), -1 goes back. */
@@ -493,6 +485,35 @@ public class HomeFragment extends Fragment {
         if (pagesAdapter != null) {
             pagesAdapter.setPageCount(GridPreferences.getPageCount(requireContext()));
             pagesAdapter.notifyDataSetChanged(); // forces bound pages to reload from prefs
+        }
+        
+        applyThemeColors();
+    }
+
+    private void applyThemeColors() {
+        if (getView() == null) return;
+        boolean highContrast = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(requireContext()).isColorBlindEnabled();
+        
+        View root = getView().findViewById(R.id.home_swipe_root);
+        View dock = getView().findViewById(R.id.dock_container);
+        TextView greeting = getView().findViewById(R.id.home_greeting);
+        
+        if (highContrast) {
+            if (root != null) root.setBackgroundColor(android.graphics.Color.BLACK);
+            if (dock != null) dock.setBackgroundColor(android.graphics.Color.BLACK);
+            if (greeting != null) {
+                greeting.setTextColor(android.graphics.Color.WHITE);
+                greeting.setTypeface(null, android.graphics.Typeface.BOLD);
+                greeting.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+            }
+        } else {
+            if (root != null) root.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            if (dock != null) dock.setBackgroundColor(android.graphics.Color.parseColor("#CC1A1A2E"));
+            if (greeting != null) {
+                greeting.setTextColor(android.graphics.Color.WHITE);
+                greeting.setTypeface(null, android.graphics.Typeface.NORMAL);
+                greeting.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            }
         }
     }
 
@@ -635,6 +656,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void showEditMenu() {
+        if (isMenuShowing) return;
+        isMenuShowing = true;
+
         // Vibrate for feedback
         if (getView() != null) {
             getView().performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
@@ -643,6 +667,7 @@ public class HomeFragment extends Fragment {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
         View view = getLayoutInflater().inflate(R.layout.bottom_sheet_home, null);
         bottomSheetDialog.setContentView(view);
+        bottomSheetDialog.setOnDismissListener(dialog -> isMenuShowing = false);
 
         view.findViewById(R.id.cardWallpaper).setOnClickListener(v -> {
             if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
@@ -694,6 +719,37 @@ public class HomeFragment extends Fragment {
         });
 
         bottomSheetDialog.show();
+    }
+
+    private void setupBackgroundHold(View v) {
+        if (v == null) return;
+        final Handler holdHandler = new Handler(Looper.getMainLooper());
+        final Runnable holdRunnable = this::showEditMenu;
+        final int touchSlop = android.view.ViewConfiguration.get(v.getContext()).getScaledTouchSlop();
+        final float[] downX = new float[1];
+        final float[] downY = new float[1];
+
+        v.setOnTouchListener((view, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    downX[0] = event.getX();
+                    downY[0] = event.getY();
+                    holdHandler.postDelayed(holdRunnable, 1500);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float dx = Math.abs(event.getX() - downX[0]);
+                    float dy = Math.abs(event.getY() - downY[0]);
+                    if (dx > touchSlop || dy > touchSlop) {
+                        holdHandler.removeCallbacks(holdRunnable);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    holdHandler.removeCallbacks(holdRunnable);
+                    break;
+            }
+            return false; // Return false so SwipeUpFrameLayout can still detect swipes
+        });
     }
 }
 

@@ -158,7 +158,7 @@ public class HomeGridAdapter
                         * columns;
 
 
-        for (int i = 0; i < totalCells; i++) {
+        for (int j = 0; j < totalCells; j++) {
 
             slots.add(null);
         }
@@ -610,7 +610,8 @@ public class HomeGridAdapter
             appHolder.bind(
                     app,
                     prefs.getFontSizeSp(),
-                    prefs.getIconSizeDp()
+                    prefs.getIconSizeDp(),
+                    prefs.isColorBlindEnabled()
             );
 
 
@@ -638,6 +639,8 @@ public class HomeGridAdapter
 
 
             clockHolder.bind();
+
+            applyHighContrastToWidget(holder.itemView, prefs.isColorBlindEnabled());
 
             bindResizeHandles(item, holder.itemView);
 
@@ -667,6 +670,8 @@ public class HomeGridAdapter
 
             batteryHolder.bind();
 
+            applyHighContrastToWidget(holder.itemView, prefs.isColorBlindEnabled());
+
             bindResizeHandles(item, holder.itemView);
 
 
@@ -694,6 +699,8 @@ public class HomeGridAdapter
 
 
             weatherHolder.bind();
+
+            applyHighContrastToWidget(holder.itemView, prefs.isColorBlindEnabled());
 
             bindResizeHandles(item, holder.itemView);
 
@@ -774,6 +781,103 @@ public class HomeGridAdapter
 
         return view;
     }
+
+    private void applyHighContrastToWidget(View view, boolean highContrast) {
+        if (highContrast) {
+            // Premium high-contrast look: Black block with a thin white border
+            android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+            gd.setColor(android.graphics.Color.BLACK);
+            gd.setCornerRadius(dpToPx(view.getContext(), 24));
+            gd.setStroke(dpToPx(view.getContext(), 1), android.graphics.Color.WHITE);
+            view.setBackground(gd);
+            
+            // Add slight padding
+            view.setPadding(dpToPx(view.getContext(), 12), dpToPx(view.getContext(), 12),
+                          dpToPx(view.getContext(), 12), dpToPx(view.getContext(), 12));
+
+            // Ensure all text inside the widget is white and bold
+            if (view instanceof ViewGroup) {
+                applyHighContrastToViewGroup((ViewGroup) view);
+            }
+        } else {
+            view.setBackgroundResource(R.drawable.widget_background_glass);
+            view.setBackgroundTintList(null);
+            // Reset children colors when not in high contrast
+            if (view instanceof ViewGroup) {
+                resetWidgetColors((ViewGroup) view);
+            }
+        }
+    }
+
+    private void applyHighContrastToViewGroup(ViewGroup group) {
+        for (int k = 0; k < group.getChildCount(); k++) {
+            View child = group.getChildAt(k);
+            if (child instanceof TextView) {
+                TextView tv = (TextView) child;
+                tv.setTextColor(android.graphics.Color.WHITE);
+                tv.setTypeface(null, android.graphics.Typeface.BOLD);
+                
+                // Significant increase for high contrast readability
+                if (tv.getId() == R.id.tv_clock_time) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 42);
+                } else if (tv.getId() == R.id.tv_clock_date) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                } else if (tv.getId() == R.id.tv_battery_percent) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
+                }
+            } else if (child instanceof ImageView) {
+                ((ImageView) child).setColorFilter(android.graphics.Color.WHITE);
+            } else if (child instanceof android.widget.ProgressBar) {
+                android.widget.ProgressBar pb = (android.widget.ProgressBar) child;
+                pb.setProgressTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE));
+            } else if (child instanceof ViewGroup) {
+                applyHighContrastToViewGroup((ViewGroup) child);
+            }
+        }
+    }
+
+    private void resetWidgetColors(ViewGroup group) {
+        for (int m = 0; m < group.getChildCount(); m++) {
+            View child = group.getChildAt(m);
+            if (child instanceof TextView) {
+                TextView tv = (TextView) child;
+                // Restore standard sizes
+                if (tv.getId() == R.id.tv_clock_time) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                } else if (tv.getId() == R.id.tv_clock_date) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                } else if (tv.getId() == R.id.tv_label_battery) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+                } else if (tv.getId() == R.id.tv_battery_percent) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                }
+
+                // If it's the date/status text, it should be slightly transparent
+                if (child.getId() == R.id.tv_clock_date) {
+                    tv.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
+                    tv.setTypeface(null, android.graphics.Typeface.NORMAL);
+                } else {
+                    tv.setTextColor(android.graphics.Color.WHITE);
+                    tv.setTypeface(null, android.graphics.Typeface.BOLD);
+                }
+            } else if (child instanceof ImageView) {
+                ((ImageView) child).clearColorFilter();
+            } else if (child instanceof android.widget.ProgressBar) {
+                // Restore green color for battery
+                ((android.widget.ProgressBar) child).setProgressTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#00E676")));
+            } else if (child instanceof ViewGroup) {
+                resetWidgetColors((ViewGroup) child);
+            }
+        }
+    }
+
+
+    private int dpToPx(Context ctx, int dp) {
+        return Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, dp,
+                ctx.getResources().getDisplayMetrics()));
+    }
+
 
     private void bindResizeHandles(GridModel item, View itemView) {
         // Feature disabled as per user request
@@ -958,7 +1062,7 @@ public class HomeGridAdapter
 
                                 handler.postDelayed(
                                         showMenuRunnable,
-                                        2500 // Delete menu appears after 2.5s hold
+                                        2000 // 2 seconds for menu
                                 );
 
 
@@ -1103,7 +1207,8 @@ public class HomeGridAdapter
         void bind(
                 @Nullable AppInfo app,
                 float fontSp,
-                int iconDp
+                int iconDp,
+                boolean highContrast
         ) {
 
             int px =
@@ -1172,6 +1277,17 @@ public class HomeGridAdapter
                     TypedValue.COMPLEX_UNIT_SP,
                     fontSp
             );
+
+
+            if (highContrast) {
+                tvLabel.setTextColor(android.graphics.Color.WHITE);
+                tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+                itemView.setBackgroundColor(android.graphics.Color.BLACK);
+            } else {
+                tvLabel.setTextColor(android.graphics.Color.WHITE);
+                tvLabel.setTypeface(null, android.graphics.Typeface.NORMAL);
+                itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            }
 
 
             itemView.setClickable(
@@ -1362,7 +1478,7 @@ public class HomeGridAdapter
             tvPercent =
                     itemView.findViewById(R.id.tv_battery_percent);
             tvStatus =
-                    itemView.findViewById(R.id.tv_battery_status);
+                    null; // Removed from single-block layout
             pbBatteryCircle =
                     itemView.findViewById(R.id.pb_battery_circle);
         }
@@ -1476,7 +1592,7 @@ public class HomeGridAdapter
             tvTemp =
                     itemView.findViewById(R.id.tv_weather_temp);
             tvCondition =
-                    itemView.findViewById(R.id.tv_weather_condition);
+                    null; // Removed from single-block layout
         }
 
 
@@ -1508,12 +1624,36 @@ public class HomeGridAdapter
         }
 
         void setup(Runnable onLongClick) {
-            itemView.setOnLongClickListener(v -> {
+            final Handler holdHandler = new Handler(Looper.getMainLooper());
+            final Runnable holdRunnable = () -> {
                 if (onLongClick != null) {
                     onLongClick.run();
-                    return true;
                 }
-                return false;
+            };
+            final int touchSlop = android.view.ViewConfiguration.get(itemView.getContext()).getScaledTouchSlop();
+            final float[] downX = new float[1];
+            final float[] downY = new float[1];
+
+            itemView.setOnTouchListener((v, event) -> {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        downX[0] = event.getX();
+                        downY[0] = event.getY();
+                        holdHandler.postDelayed(holdRunnable, 1500);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float dx = Math.abs(event.getX() - downX[0]);
+                        float dy = Math.abs(event.getY() - downY[0]);
+                        if (dx > touchSlop || dy > touchSlop) {
+                            holdHandler.removeCallbacks(holdRunnable);
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        holdHandler.removeCallbacks(holdRunnable);
+                        break;
+                }
+                return false; // Let parent RecyclerView/ViewPager see the touches for swiping
             });
         }
     }
@@ -1637,7 +1777,7 @@ public class HomeGridAdapter
                                     menuListener.onShowWidgetMenu(widget.type);
                                 }
                             };
-                            handler.postDelayed(menuRunnable[0], 2500); // Hold 2.5s for delete menu
+                            handler.postDelayed(menuRunnable[0], 2000); // 2 seconds for menu
 
 
                             return false; // MUST RETURN FALSE SO PARENT CAN SEE LONG CLICK

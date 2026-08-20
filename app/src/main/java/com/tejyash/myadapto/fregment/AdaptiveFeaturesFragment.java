@@ -1,23 +1,23 @@
 package com.tejyash.myadapto.fregment;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.tejyash.myadapto.R;
-import com.tejyash.myadapto.utils.Constants;
+import com.tejyash.myadapto.accessibility.AccessibilityPreferences;
 
 public class AdaptiveFeaturesFragment extends Fragment {
 
-    private SharedPreferences prefs;
+    private AccessibilityPreferences accessibilityPrefs;
 
     public AdaptiveFeaturesFragment() { }
 
@@ -31,19 +31,66 @@ public class AdaptiveFeaturesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        prefs = requireContext().getSharedPreferences(Constants.PREFS_ACCESSIBILITY, Context.MODE_PRIVATE);
+        accessibilityPrefs = AccessibilityPreferences.get(requireContext());
 
-        setupSwitch(view, R.id.switch_color_blind, Constants.KEY_COLOR_BLIND);
-        setupSwitch(view, R.id.switch_flashlight_alerts, Constants.KEY_FLASHLIGHT_ALERTS);
-        setupSwitch(view, R.id.switch_vibrate_alerts, Constants.KEY_VIBRATE_ALERTS);
+        setupColorBlindSwitch(view);
+        setupFlashlightSwitch(view);
+        setupVibrateSwitch(view);
+        
+        applyHighContrast(view);
     }
 
-    private void setupSwitch(View root, int switchId, String prefKey) {
-        SwitchMaterial sw = root.findViewById(switchId);
-        sw.setChecked(prefs.getBoolean(prefKey, false));
+    private void applyHighContrast(View root) {
+        boolean highContrast = accessibilityPrefs.isColorBlindEnabled();
+        
+        int bgColor = highContrast ? android.graphics.Color.BLACK : android.graphics.Color.parseColor("#1A1A2E");
+        int cardColor = highContrast ? android.graphics.Color.BLACK : android.graphics.Color.parseColor("#25253B");
+        int textColor = android.graphics.Color.WHITE;
+        
+        root.setBackgroundColor(bgColor);
+        
+        TextView title = root.findViewById(R.id.tv_adaptive_title);
+        if (title != null) {
+            title.setTextColor(textColor);
+            title.setTypeface(null, highContrast ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        }
+
+        updateCard(root, R.id.card_color_blind, cardColor, highContrast);
+        updateCard(root, R.id.card_flashlight, cardColor, highContrast);
+        updateCard(root, R.id.card_vibrate, cardColor, highContrast);
+    }
+
+    private void updateCard(View root, int cardId, int color, boolean highContrast) {
+        MaterialCardView card = root.findViewById(cardId);
+        if (card != null) {
+            card.setCardBackgroundColor(color);
+            card.setStrokeWidth(highContrast ? 4 : 0);
+            card.setStrokeColor(android.graphics.Color.WHITE);
+        }
+    }
+
+    private void setupColorBlindSwitch(View root) {
+        SwitchMaterial sw = root.findViewById(R.id.switch_color_blind);
+        sw.setChecked(accessibilityPrefs.isColorBlindEnabled());
         sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            prefs.edit().putBoolean(prefKey, isChecked).apply();
-            // In a real implementation, this would trigger theme changes or start background services
+            accessibilityPrefs.setColorBlindEnabled(isChecked);
+            applyHighContrast(root);
+        });
+    }
+
+    private void setupFlashlightSwitch(View root) {
+        SwitchMaterial sw = root.findViewById(R.id.switch_flashlight_alerts);
+        sw.setChecked(accessibilityPrefs.isFlashlightAlertEnabled());
+        sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            accessibilityPrefs.setFlashlightAlertEnabled(isChecked);
+        });
+    }
+
+    private void setupVibrateSwitch(View root) {
+        SwitchMaterial sw = root.findViewById(R.id.switch_vibrate_alerts);
+        sw.setChecked(accessibilityPrefs.isVibrateAlertEnabled());
+        sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            accessibilityPrefs.setVibrateAlertEnabled(isChecked);
         });
     }
 }

@@ -33,6 +33,7 @@
 
             <!-- Color Blind Friendly Themes -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_color_blind"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -74,6 +75,7 @@
 
             <!-- Flashlight Alerts -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_flashlight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -115,6 +117,7 @@
 
             <!-- Vibrate Alerts -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_vibrate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"

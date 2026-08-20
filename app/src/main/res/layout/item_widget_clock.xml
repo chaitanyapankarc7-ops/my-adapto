@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
+    android:padding="8dp"
     android:background="@drawable/widget_background_glass">
 
     <TextView
@@ -12,50 +12,26 @@
         android:layout_height="wrap_content"
         android:text="10:45"
         android:textColor="#FFFFFF"
-        android:textSize="32sp"
-        android:fontFamily="sans-serif-light"
+        android:textSize="20sp"
+        android:fontFamily="sans-serif-medium"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/tv_clock_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
         android:id="@+id/tv_clock_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:text="Mon, 12 Oct"
         android:textColor="#B3FFFFFF"
-        android:textSize="14sp"
+        android:textSize="10sp"
         android:textAllCaps="true"
-        android:letterSpacing="0.1"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_clock_time"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/tv_clock_time" />
-
-    <!-- Resize Handles (hidden by default) -->
-    <ImageView
-        android:id="@+id/btn_resize_left"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@android:drawable/ic_media_previous"
-        android:background="@drawable/badge_background"
-        android:backgroundTint="#80000000"
-        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <ImageView
-        android:id="@+id/btn_resize_right"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@android:drawable/ic_media_next"
-        android:background="@drawable/badge_background"
-        android:backgroundTint="#80000000"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

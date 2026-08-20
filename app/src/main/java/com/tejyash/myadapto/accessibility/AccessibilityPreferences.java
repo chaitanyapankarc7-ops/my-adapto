@@ -43,6 +43,34 @@ public class AccessibilityPreferences {
     public float getFontSizeSp() { return TEXT_SIZES[getFontStep()]; }
     public int   getIconSizeDp() { return ICON_SIZES_DP[getIconStep()]; }
 
+    // ── Adaptive Features ──────────────────────────────────────────
+    public boolean isColorBlindEnabled() {
+        return prefs.getBoolean(Constants.KEY_COLOR_BLIND, false);
+    }
+
+    public boolean isFlashlightAlertEnabled() {
+        return prefs.getBoolean(Constants.KEY_FLASHLIGHT_ALERTS, false);
+    }
+
+    public boolean isVibrateAlertEnabled() {
+        return prefs.getBoolean(Constants.KEY_VIBRATE_ALERTS, false);
+    }
+
+    public void setColorBlindEnabled(boolean enabled) {
+        prefs.edit().putBoolean(Constants.KEY_COLOR_BLIND, enabled).apply();
+        notifyListener();
+    }
+
+    public void setFlashlightAlertEnabled(boolean enabled) {
+        prefs.edit().putBoolean(Constants.KEY_FLASHLIGHT_ALERTS, enabled).apply();
+        notifyListener();
+    }
+
+    public void setVibrateAlertEnabled(boolean enabled) {
+        prefs.edit().putBoolean(Constants.KEY_VIBRATE_ALERTS, enabled).apply();
+        notifyListener();
+    }
+
     // ── Setters — persist to disk then notify the home screen ───────
     public void setFontStep(int step) {
         prefs.edit().putInt(Constants.KEY_FONT_STEP, clamp(step, 0, TEXT_SIZES.length - 1)).apply();

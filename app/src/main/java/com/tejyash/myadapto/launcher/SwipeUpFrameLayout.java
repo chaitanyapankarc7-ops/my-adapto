@@ -72,6 +72,9 @@ public class SwipeUpFrameLayout extends FrameLayout {
         if (velocityTracker == null) velocityTracker = VelocityTracker.obtain();
         velocityTracker.addMovement(ev);
 
+        // Allow super class to process events for click/long-click detection
+        super.onTouchEvent(ev);
+
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 // Covers the case where this DOWN reached us directly —

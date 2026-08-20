@@ -190,7 +190,16 @@ public class HomePagesAdapter
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return gridAdapter.getSpanSize(position);
+                boolean highContrast = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(context).isColorBlindEnabled();
+                if (highContrast) {
+                    int viewType = gridAdapter.getItemViewType(position);
+                    if (viewType == LauncherItemType.CLOCK.ordinal() ||
+                        viewType == LauncherItemType.BATTERY.ordinal() ||
+                        viewType == LauncherItemType.WEATHER.ordinal()) {
+                        return 2; // Span 2 blocks in high contrast for visibility
+                    }
+                }
+                return 1;
             }
         });
 

@@ -140,6 +140,16 @@ public class AppsFragment extends Fragment
         // Update columns when icon size changes
         layoutManager.setSpanCount(GridPreferences.getColumns(requireContext()));
         gridAdapter.notifyResized();
+
+        // Apply high contrast background to the drawer
+        if (getView() != null) {
+            boolean highContrast = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(requireContext()).isColorBlindEnabled();
+            if (highContrast) {
+                getView().setBackgroundColor(android.graphics.Color.BLACK);
+            } else {
+                getView().setBackgroundColor(android.graphics.Color.parseColor("#1A1A2E"));
+            }
+        }
     }
 
     /**
