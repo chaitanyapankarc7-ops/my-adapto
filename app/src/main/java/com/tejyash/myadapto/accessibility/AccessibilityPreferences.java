@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 
 import com.tejyash.myadapto.utils.Constants;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 /**
  * Raw storage layer for accessibility sizing preferences — just get/set,
  * no business rules. AccessibilityManager sits on top of this and owns
@@ -82,18 +85,24 @@ public class AccessibilityPreferences {
         notifyListener();
     }
 
-    // ── Listener so HomeActivity can react immediately ───────────────
+    // ── Listeners so both Home and the app drawer can react immediately ──
+    // Multiple screens (HomeFragment, AppsFragment) can be alive at once —
+    // e.g. the app drawer is an overlay on top of Home — so this fans out
+    // to every registered listener instead of just the last one to call
+    // setListener(), which used to silently drop earlier registrations.
     public interface OnPrefsChangedListener {
         void onPrefsChanged();
     }
 
-    private OnPrefsChangedListener listener;
+    private final Set<OnPrefsChangedListener> listeners = new LinkedHashSet<>();
 
-    public void setListener(OnPrefsChangedListener l) { this.listener = l; }
-    public void clearListener()                        { this.listener = null; }
+    public void setListener(OnPrefsChangedListener l)   { listeners.add(l); }
+    public void clearListener(OnPrefsChangedListener l) { listeners.remove(l); }
 
     private void notifyListener() {
-        if (listener != null) listener.onPrefsChanged();
+        for (OnPrefsChangedListener l : new LinkedHashSet<>(listeners)) {
+            l.onPrefsChanged();
+        }
     }
 
     private static int clamp(int v, int min, int max) {

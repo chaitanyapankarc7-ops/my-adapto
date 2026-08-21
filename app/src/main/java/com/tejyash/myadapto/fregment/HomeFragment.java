@@ -28,6 +28,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.tejyash.myadapto.R;
+import com.tejyash.myadapto.accessibility.AccessibilityManager;
 import com.tejyash.myadapto.adapter.HomeGridAdapter;
 import com.tejyash.myadapto.adapter.HomePagesAdapter;
 import com.tejyash.myadapto.launcher.DockPreferences;
@@ -38,9 +39,11 @@ import com.tejyash.myadapto.model.AppInfo;
 
 import java.util.Calendar;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment
+        implements AccessibilityManager.OnAccessibilityChangedListener {
 
     private AppManager      appManager;
+    private AccessibilityManager accessibilityManager;
     private HomePagesAdapter pagesAdapter;
     private ViewPager2      pager;
     private View            removePill;
@@ -72,6 +75,7 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         appManager = new AppManager(requireContext());
+        accessibilityManager = new AccessibilityManager(requireContext());
         setupDock(view);
         setGreeting(view.findViewById(R.id.home_greeting));
         setupHomeGrid(view);
@@ -113,8 +117,22 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        accessibilityManager.setListener(this);
         refreshGrid(); // picks up notification badges that changed while another app was open
         promptNotificationAccessIfNeeded();
+    }
+
+    /**
+     * Fired whenever icon size / font size changes (e.g. from
+     * SizeEditingPage). GridPreferences' column count is already updated
+     * by the time this fires (see AccessibilityManager), so a plain
+     * refreshGrid() rebuilds every page's GridLayoutManager with the new
+     * span count — this is what makes the Home grid actually resize
+     * instead of just the app drawer.
+     */
+    @Override
+    public void onAccessibilityChanged() {
+        refreshGrid();
     }
 
     /** Asks once, ever, if notification badges aren't enabled yet — never nags repeatedly. */
@@ -133,6 +151,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        accessibilityManager.clearListener();
     }
 
     private void setGreeting(TextView greetingView) {
