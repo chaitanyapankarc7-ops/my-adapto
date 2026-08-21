@@ -86,6 +86,18 @@ public class HomeFragment extends Fragment {
 
         // Use custom hold logic for the background to match the hold requirement
         setupBackgroundHold(view);
+        setupBackgroundHold(view.findViewById(R.id.dock_container));
+        
+        // Also apply to the adaptive features button background if it's blocking
+        View fab = view.findViewById(R.id.fab_adaptive_features);
+        if (fab != null) {
+            // Note: We don't want to override the click, but a long press on the FAB 
+            // can still trigger the edit menu for consistency if the user misses the gap.
+            fab.setOnLongClickListener(v -> {
+                showEditMenu();
+                return true;
+            });
+        }
 
         appManager.warmCacheAsync(this::refreshGrid);
 
@@ -734,7 +746,7 @@ public class HomeFragment extends Fragment {
                 case MotionEvent.ACTION_DOWN:
                     downX[0] = event.getX();
                     downY[0] = event.getY();
-                    holdHandler.postDelayed(holdRunnable, 1500);
+                    holdHandler.postDelayed(holdRunnable, 2000);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     float dx = Math.abs(event.getX() - downX[0]);

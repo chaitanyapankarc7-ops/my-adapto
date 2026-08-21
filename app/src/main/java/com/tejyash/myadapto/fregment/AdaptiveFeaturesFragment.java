@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -82,14 +83,59 @@ public class AdaptiveFeaturesFragment extends Fragment {
         SwitchMaterial sw = root.findViewById(R.id.switch_flashlight_alerts);
         sw.setChecked(accessibilityPrefs.isFlashlightAlertEnabled());
         sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Request permissions if needed
+                if (androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.READ_PHONE_STATE) != android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                    androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    
+                    requestPermissions(new String[]{android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.CAMERA}, 1001);
+                    sw.setChecked(false);
+                    return;
+                }
+            }
             accessibilityPrefs.setFlashlightAlertEnabled(isChecked);
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1001) {
+            boolean allGranted = true;
+            for (int res : grantResults) {
+                if (res != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (allGranted) {
+                accessibilityPrefs.setFlashlightAlertEnabled(true);
+                SwitchMaterial sw = getView().findViewById(R.id.switch_flashlight_alerts);
+                if (sw != null) sw.setChecked(true);
+            } else {
+                Toast.makeText(requireContext(), "Flashlight alerts require Call and Camera permissions", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == 1002) {
+            if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                accessibilityPrefs.setVibrateAlertEnabled(true);
+                SwitchMaterial sw = getView().findViewById(R.id.switch_vibrate_alerts);
+                if (sw != null) sw.setChecked(true);
+            } else {
+                Toast.makeText(requireContext(), "Vibrate alerts require Call permission", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void setupVibrateSwitch(View root) {
         SwitchMaterial sw = root.findViewById(R.id.switch_vibrate_alerts);
         sw.setChecked(accessibilityPrefs.isVibrateAlertEnabled());
         sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.READ_PHONE_STATE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{android.Manifest.permission.READ_PHONE_STATE}, 1002);
+                    sw.setChecked(false);
+                    return;
+                }
+            }
             accessibilityPrefs.setVibrateAlertEnabled(isChecked);
         });
     }

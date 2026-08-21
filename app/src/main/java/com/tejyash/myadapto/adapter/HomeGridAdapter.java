@@ -1639,7 +1639,7 @@ public class HomeGridAdapter
                     case MotionEvent.ACTION_DOWN:
                         downX[0] = event.getX();
                         downY[0] = event.getY();
-                        holdHandler.postDelayed(holdRunnable, 1500);
+                        holdHandler.postDelayed(holdRunnable, 2000);
                         break;
                     case MotionEvent.ACTION_MOVE:
                         float dx = Math.abs(event.getX() - downX[0]);
