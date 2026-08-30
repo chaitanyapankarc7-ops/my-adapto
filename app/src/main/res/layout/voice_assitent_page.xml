@@ -17,7 +17,7 @@
         android:layout_marginEnd="24dp"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
-        android:text="Voice Asisstant"
+        android:text="Voice Assistant"
         android:textColor="#0D1E7E"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"

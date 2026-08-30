@@ -817,13 +817,17 @@ public class HomeGridAdapter
                 tv.setTextColor(android.graphics.Color.WHITE);
                 tv.setTypeface(null, android.graphics.Typeface.BOLD);
                 
-                // Significant increase for high contrast readability
+                // Readable sizes that fit cleanly inside single-block 1x1 widgets
                 if (tv.getId() == R.id.tv_clock_time) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 42);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
                 } else if (tv.getId() == R.id.tv_clock_date) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
                 } else if (tv.getId() == R.id.tv_battery_percent) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                } else if (tv.getId() == R.id.tv_label_battery) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+                } else if (tv.getId() == R.id.tv_weather_temp) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
                 }
             } else if (child instanceof ImageView) {
                 ((ImageView) child).setColorFilter(android.graphics.Color.WHITE);
@@ -843,13 +847,15 @@ public class HomeGridAdapter
                 TextView tv = (TextView) child;
                 // Restore standard sizes
                 if (tv.getId() == R.id.tv_clock_time) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                 } else if (tv.getId() == R.id.tv_clock_date) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
                 } else if (tv.getId() == R.id.tv_label_battery) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
                 } else if (tv.getId() == R.id.tv_battery_percent) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
+                } else if (tv.getId() == R.id.tv_weather_temp) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
                 }
 
                 // If it's the date/status text, it should be slightly transparent
@@ -975,7 +981,7 @@ public class HomeGridAdapter
             touchSlop =
                     ViewConfiguration
                             .get(
-                                    itemView.getContext()
+                                     itemView.getContext()
                             )
                             .getScaledTouchSlop();
 
@@ -993,152 +999,79 @@ public class HomeGridAdapter
         ) {
 
             if (app == null) {
-
-                itemView.setOnTouchListener(
-                        null
-                );
-
-                itemView.setOnClickListener(
-                        null
-                );
-
+                itemView.setOnTouchListener(null);
+                itemView.setOnClickListener(null);
                 return;
             }
 
+            itemView.setOnTouchListener((v, event) -> {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        downX = event.getRawX();
+                        downY = event.getRawY();
+                        moved = false;
+                        dragArmed = false;
+                        cancelPending();
 
-            itemView.setOnTouchListener(
-                    (v, event) -> {
+                        armDragRunnable = () -> {
+                            dragArmed = true;
+                            if (v.getParent() != null) {
+                                v.getParent().requestDisallowInterceptTouchEvent(true);
+                            }
+                            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                            v.setAlpha(0.3f);
+                            startRepositionDrag(app, v);
+                        };
 
-                        switch (
-                                event.getActionMasked()
-                        ) {
+                        handler.postDelayed(armDragRunnable, 500);
 
+                        showMenuRunnable = () -> {
+                            if (!moved && !dragArmed && menuRequestListener != null) {
+                                v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                                menuRequestListener.onShowMenu(app);
+                            }
+                        };
 
-                            case MotionEvent.ACTION_DOWN:
+                        handler.postDelayed(showMenuRunnable, 2000);
+                        return true;
 
-                                downX =
-                                        event.getRawX();
-
-                                downY =
-                                        event.getRawY();
-
-
-                                moved = false;
-
-                                dragArmed = false;
-
-
-                                cancelPending();
-
-
-                                armDragRunnable =
-                                        () -> {
-                                            dragArmed = true;
-                                            if (v.getParent() != null) {
-                                                v.getParent().requestDisallowInterceptTouchEvent(true);
-                                            }
-                                            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-                                            
-                                            // Make original item semi-transparent during drag for a "premium" feel
-                                            v.setAlpha(0.3f);
-                                            startRepositionDrag(app, v);
-                                        };
-
-
-                                handler.postDelayed(
-                                        armDragRunnable,
-                                        500 // Start drag after 0.5s hold
-                                );
-
-
-                                showMenuRunnable =
-                                        () -> {
-                                            if (!moved && !dragArmed && menuRequestListener != null) {
-                                                v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-                                                menuRequestListener.onShowMenu(app);
-                                            }
-                                        };
-
-
-                                handler.postDelayed(
-                                        showMenuRunnable,
-                                        2000 // 2 seconds for menu
-                                );
-
-
-                                return false; // MUST RETURN FALSE SO PARENT CAN SEE LONG CLICK
-
-
-                            case MotionEvent.ACTION_MOVE:
-
-                                if (moved || dragArmed) {
-                                    return true;
-                                }
-
-
-                                float dx =
-                                        event.getRawX()
-                                                - downX;
-
-
-                                float dy =
-                                        event.getRawY()
-                                                - downY;
-
-
-                                if (
-                                        Math.abs(dx)
-                                                > touchSlop
-                                                ||
-                                                Math.abs(dy)
-                                                        > touchSlop
-                                ) {
-
-                                    moved = true;
-                                    cancelPending();
-                                }
-
-
-                                return true;
-
-
-                            case MotionEvent.ACTION_UP:
-
-                                cancelPending();
-                                v.setAlpha(1.0f); // Reset transparency if drag didn't happen
-
-
-                                if (!moved && !dragArmed) {
-
-                                    if (
-                                            clickListener
-                                                    != null
-                                    ) {
-
-                                        clickListener
-                                                .onAppClick(
-                                                        app
-                                                );
-                                    }
-                                }
-
-
-                                return true;
-
-
-                            case MotionEvent.ACTION_CANCEL:
-
-                                cancelPending();
-
-                                return true;
-
-
-                            default:
-
-                                return false;
+                    case MotionEvent.ACTION_MOVE:
+                        if (dragArmed) {
+                            return true;
                         }
-                    }
-            );
+
+                        float dx = event.getRawX() - downX;
+                        float dy = event.getRawY() - downY;
+
+                        if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
+                            moved = true;
+                            cancelPending();
+                            if (v.getParent() != null) {
+                                v.getParent().requestDisallowInterceptTouchEvent(false);
+                            }
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        cancelPending();
+                        v.setAlpha(1.0f);
+
+                        if (!moved && !dragArmed) {
+                            if (clickListener != null) {
+                                clickListener.onAppClick(app);
+                            }
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_CANCEL:
+                        cancelPending();
+                        v.setAlpha(1.0f);
+                        return true;
+
+                    default:
+                        return false;
+                }
+            });
         }
 
 
@@ -1308,7 +1241,7 @@ public class HomeGridAdapter
                                 .getCount(
                                         itemView.getContext(),
                                         app.packageName
-                                );
+                                 );
 
 
                 if (count > 0) {
@@ -1624,36 +1557,12 @@ public class HomeGridAdapter
         }
 
         void setup(Runnable onLongClick) {
-            final Handler holdHandler = new Handler(Looper.getMainLooper());
-            final Runnable holdRunnable = () -> {
+            itemView.setOnLongClickListener(v -> {
                 if (onLongClick != null) {
                     onLongClick.run();
+                    return true;
                 }
-            };
-            final int touchSlop = android.view.ViewConfiguration.get(itemView.getContext()).getScaledTouchSlop();
-            final float[] downX = new float[1];
-            final float[] downY = new float[1];
-
-            itemView.setOnTouchListener((v, event) -> {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        downX[0] = event.getX();
-                        downY[0] = event.getY();
-                        holdHandler.postDelayed(holdRunnable, 2000);
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        float dx = Math.abs(event.getX() - downX[0]);
-                        float dy = Math.abs(event.getY() - downY[0]);
-                        if (dx > touchSlop || dy > touchSlop) {
-                            holdHandler.removeCallbacks(holdRunnable);
-                        }
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        holdHandler.removeCallbacks(holdRunnable);
-                        break;
-                }
-                return false; // Let parent RecyclerView/ViewPager see the touches for swiping
+                return false;
             });
         }
     }
@@ -1695,11 +1604,6 @@ public class HomeGridAdapter
                                 itemView.getContext()
                         )
                         .getScaledTouchSlop();
-
-
-        final long longPressMs =
-                ViewConfiguration
-                        .getLongPressTimeout();
 
 
         final float[] downX =
@@ -1778,9 +1682,7 @@ public class HomeGridAdapter
                                 }
                             };
                             handler.postDelayed(menuRunnable[0], 2000); // 2 seconds for menu
-
-
-                            return false; // MUST RETURN FALSE SO PARENT CAN SEE LONG CLICK
+                            return true;
 
 
                         case MotionEvent.ACTION_MOVE:
@@ -1809,7 +1711,7 @@ public class HomeGridAdapter
                                             ||
                                             Math.abs(dy)
                                                     > touchSlop
-                            ) {
+                                            ) {
 
                                 moved[0] =
                                         true;
@@ -1817,6 +1719,9 @@ public class HomeGridAdapter
 
                                 if (dragRunnable[0] != null) handler.removeCallbacks(dragRunnable[0]);
                                 if (menuRunnable[0] != null) handler.removeCallbacks(menuRunnable[0]);
+                                if (v.getParent() != null) {
+                                    v.getParent().requestDisallowInterceptTouchEvent(false);
+                                }
                             }
 
 
@@ -1824,14 +1729,11 @@ public class HomeGridAdapter
 
 
                         case MotionEvent.ACTION_UP:
-
-                        case MotionEvent.ACTION_CANCEL:
-
-                            handler.removeCallbacks(dragRunnable[0]);
-                            handler.removeCallbacks(menuRunnable[0]);
+                            if (dragRunnable[0] != null) handler.removeCallbacks(dragRunnable[0]);
+                            if (menuRunnable[0] != null) handler.removeCallbacks(menuRunnable[0]);
                             v.setAlpha(1.0f); // Reset transparency
 
-                            if (event.getAction() == MotionEvent.ACTION_UP && !moved[0] && !dragStarted[0]) {
+                            if (!moved[0] && !dragStarted[0]) {
                                 // Simple tap - toggle selection for resizing
                                 if (selectedWidgetType == widget.type) {
                                     selectedWidgetType = null;
@@ -1840,14 +1742,16 @@ public class HomeGridAdapter
                                 }
                                 notifyDataSetChanged();
                             }
-
-
                             return true;
 
+                        case MotionEvent.ACTION_CANCEL:
+                            if (dragRunnable[0] != null) handler.removeCallbacks(dragRunnable[0]);
+                            if (menuRunnable[0] != null) handler.removeCallbacks(menuRunnable[0]);
+                            v.setAlpha(1.0f); // Reset transparency
+                            return true;
 
                         default:
-
-                            return true;
+                            return false;
                     }
                 }
         );

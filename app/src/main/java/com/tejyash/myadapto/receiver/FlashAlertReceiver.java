@@ -16,7 +16,13 @@ import com.tejyash.myadapto.accessibility.AccessibilityPreferences;
 
 public class FlashAlertReceiver extends BroadcastReceiver {
 
-    private static boolean isFlashing = false;
+    private static volatile boolean isFlashing = false;
+    private static volatile boolean isVibrating = false;
+    private static Thread flashThread = null;
+    private static Thread vibrateThread = null;
+    private static String activeFlashCameraId = null;
+    private static CameraManager activeCameraManager = null;
+    private static Vibrator activeVibrator = null;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -35,54 +41,109 @@ public class FlashAlertReceiver extends BroadcastReceiver {
         }
     }
 
-    private void startFlashing(Context context) {
+    private synchronized void startFlashing(Context context) {
         if (isFlashing) return;
         isFlashing = true;
 
-        CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        new Thread(() -> {
+        activeCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        activeFlashCameraId = findFlashCameraId(activeCameraManager);
+        if (activeFlashCameraId == null) {
+            isFlashing = false;
+            return;
+        }
+
+        flashThread = new Thread(() -> {
             try {
-                String cameraId = cameraManager.getCameraIdList()[0];
-                while (isFlashing) {
-                    cameraManager.setTorchMode(cameraId, true);
+                while (isFlashing && activeFlashCameraId != null && activeCameraManager != null) {
+                    activeCameraManager.setTorchMode(activeFlashCameraId, true);
                     Thread.sleep(300);
-                    cameraManager.setTorchMode(cameraId, false);
+                    if (!isFlashing) break;
+                    activeCameraManager.setTorchMode(activeFlashCameraId, false);
                     Thread.sleep(300);
                 }
-            } catch (CameraAccessException | InterruptedException | ArrayIndexOutOfBoundsException ignored) {
+            } catch (Exception ignored) {
+            } finally {
+                if (activeFlashCameraId != null && activeCameraManager != null) {
+                    try {
+                        activeCameraManager.setTorchMode(activeFlashCameraId, false);
+                    } catch (Exception ignored) {}
+                }
                 isFlashing = false;
             }
-        }).start();
+        });
+        flashThread.start();
     }
 
-    private void stopFlashing() {
+    private synchronized void stopFlashing() {
         isFlashing = false;
+        if (activeCameraManager != null && activeFlashCameraId != null) {
+            try {
+                activeCameraManager.setTorchMode(activeFlashCameraId, false);
+            } catch (Exception ignored) {}
+        }
+        if (flashThread != null) {
+            flashThread.interrupt();
+            flashThread = null;
+        }
     }
 
-    private static boolean isVibrating = false;
+    private String findFlashCameraId(CameraManager cameraManager) {
+        if (cameraManager == null) return null;
+        try {
+            for (String id : cameraManager.getCameraIdList()) {
+                Boolean hasFlash = cameraManager.getCameraCharacteristics(id)
+                        .get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                if (Boolean.TRUE.equals(hasFlash)) {
+                    return id;
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
 
-    private void startVibrating(Context context) {
+    private synchronized void startVibrating(Context context) {
         if (isVibrating) return;
         isVibrating = true;
 
-        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        new Thread(() -> {
-            while (isVibrating) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                } else {
-                    vibrator.vibrate(500);
-                }
-                try {
+        activeVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (activeVibrator == null) {
+            isVibrating = false;
+            return;
+        }
+
+        vibrateThread = new Thread(() -> {
+            try {
+                while (isVibrating && activeVibrator != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        activeVibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        activeVibrator.vibrate(500);
+                    }
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    isVibrating = false;
                 }
+            } catch (InterruptedException ignored) {
+            } finally {
+                if (activeVibrator != null) {
+                    try {
+                        activeVibrator.cancel();
+                    } catch (Exception ignored) {}
+                }
+                isVibrating = false;
             }
-        }).start();
+        });
+        vibrateThread.start();
     }
 
-    private void stopVibrating() {
+    private synchronized void stopVibrating() {
         isVibrating = false;
+        if (activeVibrator != null) {
+            try {
+                activeVibrator.cancel();
+            } catch (Exception ignored) {}
+        }
+        if (vibrateThread != null) {
+            vibrateThread.interrupt();
+            vibrateThread = null;
+        }
     }
 }

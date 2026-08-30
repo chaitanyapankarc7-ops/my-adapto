@@ -37,7 +37,16 @@ import com.tejyash.myadapto.launcher.GridPreferences;
 import com.tejyash.myadapto.manager.AppManager;
 import com.tejyash.myadapto.model.AppInfo;
 
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import com.tejyash.myadapto.adapter.QuickNotificationAdapter;
+import com.tejyash.myadapto.notifications.AdaptoNotificationListenerService;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class HomeFragment extends Fragment
         implements AccessibilityManager.OnAccessibilityChangedListener {
@@ -61,6 +70,16 @@ public class HomeFragment extends Fragment
 
     private boolean isMenuShowing = false;
 
+    // Quick Controls & Pull-Down Notification Panel
+    private View quickControlsPanel;
+    private View panelScrim;
+    private View notificationPullHandle;
+    private QuickNotificationAdapter quickNotifAdapter;
+    private boolean isTorchOn = false;
+    private CameraManager cameraManager;
+    private String flashCameraId = null;
+    private AdaptoNotificationListenerService.OnNotificationsChangedListener notifListener;
+
     public HomeFragment() { }
 
     @Nullable
@@ -79,6 +98,7 @@ public class HomeFragment extends Fragment
         setupDock(view);
         setGreeting(view.findViewById(R.id.home_greeting));
         setupHomeGrid(view);
+        setupQuickControlsPanel(view);
         
         // Floating Adaptive Features Button
         view.findViewById(R.id.fab_adaptive_features).setOnClickListener(v -> {
@@ -95,8 +115,6 @@ public class HomeFragment extends Fragment
         // Also apply to the adaptive features button background if it's blocking
         View fab = view.findViewById(R.id.fab_adaptive_features);
         if (fab != null) {
-            // Note: We don't want to override the click, but a long press on the FAB 
-            // can still trigger the edit menu for consistency if the user misses the gap.
             fab.setOnLongClickListener(v -> {
                 showEditMenu();
                 return true;
@@ -112,6 +130,243 @@ public class HomeFragment extends Fragment
         }
         
         ensureDefaultWidgets();
+    }
+
+    // ── Quick Controls & Notification Pull-Down Panel ───────────────
+    private void setupQuickControlsPanel(View root) {
+        quickControlsPanel = root.findViewById(R.id.quick_controls_panel);
+        panelScrim = root.findViewById(R.id.panel_scrim);
+        notificationPullHandle = root.findViewById(R.id.notification_pull_handle);
+
+        if (notificationPullHandle != null) {
+            notificationPullHandle.setOnClickListener(v -> openPullDownPanel());
+        }
+
+        if (panelScrim != null) {
+            panelScrim.setOnClickListener(v -> closePullDownPanel());
+        }
+
+        View btnClose = root.findViewById(R.id.btn_close_panel);
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> closePullDownPanel());
+        }
+
+        View bottomHandle = root.findViewById(R.id.panel_bottom_handle);
+        if (bottomHandle != null) {
+            bottomHandle.setOnClickListener(v -> closePullDownPanel());
+        }
+
+        // Initialize CameraManager for Flashlight tile
+        try {
+            cameraManager = (CameraManager) requireContext().getSystemService(android.content.Context.CAMERA_SERVICE);
+            if (cameraManager != null) {
+                for (String id : cameraManager.getCameraIdList()) {
+                    CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(id);
+                    Boolean hasFlash = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                    if (hasFlash != null && hasFlash) {
+                        flashCameraId = id;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // Setup Flashlight Tile
+        View tileFlashlight = root.findViewById(R.id.tile_flashlight);
+        TextView tvFlashlightStatus = root.findViewById(R.id.tv_flashlight_status);
+        ImageView ivFlashlightIcon = root.findViewById(R.id.iv_flashlight_icon);
+        if (tileFlashlight != null) {
+            tileFlashlight.setOnClickListener(v -> toggleTorch(tileFlashlight, tvFlashlightStatus, ivFlashlightIcon));
+        }
+
+        // Setup Internet Tile
+        View tileInternet = root.findViewById(R.id.tile_internet);
+        if (tileInternet != null) {
+            tileInternet.setOnClickListener(v -> {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        startActivity(new Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY));
+                    } else {
+                        startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+                    }
+                } catch (Exception e) {
+                    try {
+                        startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+                    } catch (Exception ignored) {}
+                }
+            });
+        }
+
+        // Setup Volume Tile
+        View tileVolume = root.findViewById(R.id.tile_volume);
+        if (tileVolume != null) {
+            tileVolume.setOnClickListener(v -> {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        startActivity(new Intent(android.provider.Settings.Panel.ACTION_VOLUME));
+                    } else {
+                        startActivity(new Intent(android.provider.Settings.ACTION_SOUND_SETTINGS));
+                    }
+                } catch (Exception e) {
+                    try {
+                        startActivity(new Intent(android.provider.Settings.ACTION_SOUND_SETTINGS));
+                    } catch (Exception ignored) {}
+                }
+            });
+        }
+
+        // Setup Bluetooth Tile
+        View tileBluetooth = root.findViewById(R.id.tile_bluetooth);
+        if (tileBluetooth != null) {
+            tileBluetooth.setOnClickListener(v -> {
+                try {
+                    startActivity(new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS));
+                } catch (Exception ignored) {}
+            });
+        }
+
+        // Setup Notifications RecyclerView
+        RecyclerView rvNotifications = root.findViewById(R.id.rv_quick_notifications);
+        if (rvNotifications != null) {
+            rvNotifications.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+            quickNotifAdapter = new QuickNotificationAdapter();
+            rvNotifications.setAdapter(quickNotifAdapter);
+        }
+
+        // Setup Grant Notification Access button
+        View btnGrantAccess = root.findViewById(R.id.btn_grant_notif_access);
+        if (btnGrantAccess != null) {
+            btnGrantAccess.setOnClickListener(v -> {
+                startActivity(com.tejyash.myadapto.notifications.NotificationAccessHelper.settingsIntent());
+            });
+        }
+
+        notifListener = this::refreshQuickPanelNotifications;
+    }
+
+    private void toggleTorch(View tile, TextView statusText, ImageView icon) {
+        if (cameraManager == null || flashCameraId == null) {
+            Toast.makeText(requireContext(), "Flashlight not available on this device", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            isTorchOn = !isTorchOn;
+            cameraManager.setTorchMode(flashCameraId, isTorchOn);
+
+            if (statusText != null) {
+                statusText.setText(isTorchOn ? "On" : "Off");
+                statusText.setTextColor(isTorchOn ? android.graphics.Color.parseColor("#93C5FD") : android.graphics.Color.parseColor("#9CA3AF"));
+            }
+            if (tile != null) {
+                tile.setBackgroundColor(isTorchOn ? android.graphics.Color.parseColor("#1E3A8A") : android.graphics.Color.parseColor("#25253B"));
+            }
+            if (icon != null) {
+                icon.setColorFilter(isTorchOn ? android.graphics.Color.parseColor("#60A5FA") : android.graphics.Color.WHITE);
+            }
+        } catch (Exception e) {
+            isTorchOn = false;
+            Toast.makeText(requireContext(), "Could not toggle flashlight", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public boolean isPullDownPanelOpen() {
+        return quickControlsPanel != null && quickControlsPanel.getVisibility() == View.VISIBLE;
+    }
+
+    public void openPullDownPanel() {
+        if (quickControlsPanel == null || isPullDownPanelOpen()) return;
+
+        // Update DateTime text
+        if (getView() != null) {
+            TextView tvDateTime = getView().findViewById(R.id.tv_panel_datetime);
+            if (tvDateTime != null) {
+                String dateStr = new SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(new Date());
+                String timeStr = new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date());
+                tvDateTime.setText(timeStr + " • " + dateStr);
+            }
+        }
+
+        refreshQuickPanelNotifications();
+        AdaptoNotificationListenerService.registerListener(notifListener);
+
+        quickControlsPanel.setVisibility(View.VISIBLE);
+        quickControlsPanel.setTranslationY(-800f);
+        quickControlsPanel.animate()
+                .translationY(0f)
+                .setDuration(280)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+
+        if (panelScrim != null) {
+            panelScrim.setVisibility(View.VISIBLE);
+            panelScrim.setAlpha(0f);
+            panelScrim.animate().alpha(1f).setDuration(280).start();
+        }
+    }
+
+    public void closePullDownPanel() {
+        if (quickControlsPanel == null || !isPullDownPanelOpen()) return;
+
+        AdaptoNotificationListenerService.unregisterListener(notifListener);
+
+        quickControlsPanel.animate()
+                .translationY(-800f)
+                .setDuration(240)
+                .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                .withEndAction(() -> {
+                    if (quickControlsPanel != null) {
+                        quickControlsPanel.setVisibility(View.GONE);
+                    }
+                })
+                .start();
+
+        if (panelScrim != null) {
+            panelScrim.animate()
+                    .alpha(0f)
+                    .setDuration(240)
+                    .withEndAction(() -> {
+                        if (panelScrim != null) {
+                            panelScrim.setVisibility(View.GONE);
+                        }
+                    })
+                    .start();
+        }
+    }
+
+    private void refreshQuickPanelNotifications() {
+        if (getView() == null || !isAdded()) return;
+
+        requireActivity().runOnUiThread(() -> {
+            View root = getView();
+            if (root == null) return;
+
+            boolean hasAccess = AdaptoNotificationListenerService.isNotificationAccessGranted(requireContext());
+            View layoutPerm = root.findViewById(R.id.layout_notif_permission);
+            RecyclerView rvNotifs = root.findViewById(R.id.rv_quick_notifications);
+            TextView tvEmpty = root.findViewById(R.id.tv_no_notifications);
+
+            if (!hasAccess) {
+                if (layoutPerm != null) layoutPerm.setVisibility(View.VISIBLE);
+                if (rvNotifs != null) rvNotifs.setVisibility(View.GONE);
+                if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+            } else {
+                if (layoutPerm != null) layoutPerm.setVisibility(View.GONE);
+                List<AdaptoNotificationListenerService.NotificationItem> notifs =
+                        AdaptoNotificationListenerService.getRecentNotifications();
+
+                if (notifs.isEmpty()) {
+                    if (tvEmpty != null) tvEmpty.setVisibility(View.VISIBLE);
+                    if (rvNotifs != null) rvNotifs.setVisibility(View.GONE);
+                } else {
+                    if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+                    if (rvNotifs != null) rvNotifs.setVisibility(View.VISIBLE);
+                    if (quickNotifAdapter != null) {
+                        quickNotifAdapter.setItems(notifs);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -754,32 +1009,9 @@ public class HomeFragment extends Fragment
 
     private void setupBackgroundHold(View v) {
         if (v == null) return;
-        final Handler holdHandler = new Handler(Looper.getMainLooper());
-        final Runnable holdRunnable = this::showEditMenu;
-        final int touchSlop = android.view.ViewConfiguration.get(v.getContext()).getScaledTouchSlop();
-        final float[] downX = new float[1];
-        final float[] downY = new float[1];
-
-        v.setOnTouchListener((view, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    downX[0] = event.getX();
-                    downY[0] = event.getY();
-                    holdHandler.postDelayed(holdRunnable, 2000);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    float dx = Math.abs(event.getX() - downX[0]);
-                    float dy = Math.abs(event.getY() - downY[0]);
-                    if (dx > touchSlop || dy > touchSlop) {
-                        holdHandler.removeCallbacks(holdRunnable);
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    holdHandler.removeCallbacks(holdRunnable);
-                    break;
-            }
-            return false; // Return false so SwipeUpFrameLayout can still detect swipes
+        v.setOnLongClickListener(view -> {
+            showEditMenu();
+            return true;
         });
     }
 }

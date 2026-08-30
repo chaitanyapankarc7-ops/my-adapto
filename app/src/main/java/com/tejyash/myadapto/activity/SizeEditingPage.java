@@ -82,8 +82,18 @@ public class SizeEditingPage extends AppCompatActivity {
             @Override public void onStopTrackingTouch(SeekBar s)  {}
         });
 
-        // ── High contrast toggle (visual only — no persistence needed) ──
+        // ── High contrast toggle ──
+        boolean initialContrast = AccessibilityPreferences.get(this).isColorBlindEnabled();
+        switchContrast.setChecked(initialContrast);
+        if (initialContrast) {
+            card4.setCardBackgroundColor(0xFF000000);
+            tvContrastLabel.setTextColor(0xFFFFFFFF);
+            tvContrastSub.setTextColor(0xFFFFFFFF);
+            tvContrastLabel.setTypeface(null, Typeface.BOLD);
+        }
+
         switchContrast.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            AccessibilityPreferences.get(this).setColorBlindEnabled(isChecked);
             if (isChecked) {
                 card4.setCardBackgroundColor(0xFF000000);
                 tvContrastLabel.setTextColor(0xFFFFFFFF);
@@ -100,15 +110,25 @@ public class SizeEditingPage extends AppCompatActivity {
         // ── Continue button ──────────────────────────────────────────
         Button btn = findViewById(R.id.btn);
         btn.setOnClickListener(v -> {
+            boolean wasComplete = getSharedPreferences(Constants.PREFS_ONBOARDING, MODE_PRIVATE)
+                    .getBoolean(Constants.KEY_SETUP_COMPLETE, false);
+
             // Mark setup complete so next cold start goes straight to HomeActivity
             getSharedPreferences(Constants.PREFS_ONBOARDING, MODE_PRIVATE)
                     .edit()
                     .putBoolean(Constants.KEY_SETUP_COMPLETE, true)
                     .apply();
 
-            Intent intent = new Intent(SizeEditingPage.this, HomeActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+            if (wasComplete) {
+                // Opened from within settings — finish back to home cleanly
+                finish();
+            } else {
+                // First-time onboarding flow
+                Intent intent = new Intent(SizeEditingPage.this, HomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
         });
     }
 

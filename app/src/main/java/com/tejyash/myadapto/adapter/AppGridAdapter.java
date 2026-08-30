@@ -159,7 +159,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<AppGridAdapter.AppViewH
         int columns = GridPreferences.getColumns(context);
 
         // Clear old saved positions for this page first
-        GridPreferences.clearAll(context);
+        GridPreferences.clearPage(context, page);
 
         // Save each app at its new row/col
         for (int i = 0; i < apps.size(); i++) {

@@ -717,6 +717,9 @@ public class GridPreferences {
         // Recursively push items in the next slot
         bumpOccupant(ctx, nextPage, nextRow, nextCol);
 
+        // Clear previous slot to prevent ghost duplicates
+        clearSlot(ctx, occupant.page, occupant.row, occupant.col);
+
         // Move current occupant to the next slot
         occupant.page = nextPage;
         occupant.row = nextRow;
