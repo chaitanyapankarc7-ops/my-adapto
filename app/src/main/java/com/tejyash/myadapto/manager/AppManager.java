@@ -211,9 +211,16 @@ public class AppManager {
      * uninstalled since the grid was last loaded, so the caller can refresh.
      */
     public boolean launchApp(Context ctx, AppInfo app) {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.setClassName(app.packageName, app.activityName);
+        if (app == null || app.packageName == null) return false;
+        Intent intent;
+        if (app.activityName != null) {
+            intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            intent.setClassName(app.packageName, app.activityName);
+        } else {
+            intent = ctx.getPackageManager().getLaunchIntentForPackage(app.packageName);
+        }
+        if (intent == null) return false;
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             ctx.startActivity(intent);

@@ -26,4 +26,5 @@ public final class Constants {
     public static final String KEY_COLOR_BLIND       = "color_blind_enabled";
     public static final String KEY_FLASHLIGHT_ALERTS = "flashlight_alerts_enabled";
     public static final String KEY_VIBRATE_ALERTS    = "vibrate_alerts_enabled";
+    public static final String KEY_BIG_VIBRATION     = "big_vibration_enabled";
 }

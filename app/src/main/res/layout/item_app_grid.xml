@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Single cell in the home screen app grid.
-    Icon size (iv_app_icon) and label text size (tv_app_label)
-    are both set programmatically by AppGridAdapter based on
-    the current AccessibilityPreferences values.
--->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -12,7 +6,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="8dp"
+    android:padding="6dp"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:background="?attr/selectableItemBackgroundBorderless">
 
     <FrameLayout
@@ -21,22 +17,20 @@
 
         <ImageView
             android:id="@+id/iv_app_icon"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
             android:scaleType="fitCenter"
             android:contentDescription="" />
 
-        <!-- Notification badge — hidden (GONE) unless AdaptoNotificationListenerService
-             has a count > 0 for this app's package. -->
+        <!-- Notification badge inside icon area -->
         <TextView
             android:id="@+id/tv_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top|end"
-            android:layout_marginTop="-4dp"
-            android:layout_marginEnd="-4dp"
-            android:minWidth="18dp"
-            android:minHeight="18dp"
+            android:minWidth="20dp"
+            android:minHeight="20dp"
             android:gravity="center"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
@@ -46,18 +40,26 @@
             android:textStyle="bold"
             android:visibility="gone"
             tools:ignore="HardcodedText" />
-
     </FrameLayout>
 
     <TextView
         android:id="@+id/tv_app_label"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="4dp"
         android:gravity="center"
-        android:maxLines="2"
+        android:maxLines="1"
         android:ellipsize="end"
         android:textSize="14sp"
-        android:textColor="#FFFFFF" />
+        android:textColor="#FFFFFF"
+        android:shadowColor="#80000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:textStyle="bold"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:background="@drawable/pill_background"
+        android:backgroundTint="#80000000" />
 
 </LinearLayout>

@@ -5,70 +5,105 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/voice"
-    tools:context=".VoiceAssitentPage">
+    android:background="@drawable/bg_voice_assistant"
+    tools:context=".activity.VoiceAssitentPage">
 
     <TextView
         android:id="@+id/textView5"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="24dp"
-        android:fontFamily="sans-serif-medium"
-        android:gravity="center"
-        android:text="Voice Asisstant"
-        android:textColor="#0D1E7E"
-        android:textSize="34sp"
+        android:layout_marginTop="48dp"
+        android:fontFamily="sans-serif-black"
+        android:text="ADAPTO VOICE"
+        android:textColor="#FFFFFF"
+        android:textSize="28sp"
+        android:letterSpacing="0.1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/viewGlow"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:background="@drawable/bg_assistant_bubble"
+        android:alpha="0.2"
+        app:layout_constraintBottom_toBottomOf="@+id/imgMic"
+        app:layout_constraintEnd_toEndOf="@+id/imgMic"
+        app:layout_constraintStart_toStartOf="@+id/imgMic"
+        app:layout_constraintTop_toTopOf="@+id/imgMic" />
+
     <ImageView
         android:id="@+id/imgMic"
-        android:layout_width="88dp"
-        android:layout_height="88dp"
-        android:layout_marginTop="32dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="64dp"
+        android:background="@drawable/bg_assistant_bubble"
+        android:padding="20dp"
+        android:elevation="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5"
-        app:srcCompat="@drawable/img_7_removebg_preview" />
+        app:srcCompat="@android:drawable/ic_btn_speak_now"
+        app:tint="#FFFFFF" />
 
-    <!--
-        Transcript panel: constrained top-to-bottom between the mic and the
-        screen's bottom edge (0dp height) instead of the old match_parent
-        height combined with a fixed 400dp top margin, which pushed the card
-        off-screen on shorter devices and made it overflow on taller ones.
-    -->
+    <TextView
+        android:id="@+id/txtStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Tap to Speak"
+        android:textColor="#A0AEC0"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgMic" />
+
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="24dp"
-        app:cardBackgroundColor="#1E293B"
-        app:cardCornerRadius="0dp"
+        android:layout_margin="24dp"
+        app:cardBackgroundColor="#1AFFFFFF"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgMic">
+        app:layout_constraintTop_toBottomOf="@+id/txtStatus">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="16dp">
+            android:padding="20dp"
+            android:background="@drawable/bg_glass_card">
+
+            <TextView
+                android:id="@+id/lblTranscript"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Transcript"
+                android:textColor="#80FFFFFF"
+                android:textSize="12sp"
+                android:textAllCaps="true"
+                android:letterSpacing="0.1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/btnClear"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/button"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_glass_card"
                 android:text="Clear"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ScrollView
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -78,9 +113,11 @@
                     android:id="@+id/textView23"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="sans-serif"
+                    android:lineSpacingExtra="4sp"
                     android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
+                    android:textSize="18sp"
+                    tools:text="How can I help you today?" />
             </ScrollView>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

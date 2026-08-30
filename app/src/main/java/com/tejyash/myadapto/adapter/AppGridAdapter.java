@@ -1,6 +1,8 @@
 package com.tejyash.myadapto.adapter;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -159,7 +161,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<AppGridAdapter.AppViewH
         int columns = GridPreferences.getColumns(context);
 
         // Clear old saved positions for this page first
-        GridPreferences.clearAll(context);
+        GridPreferences.clearPage(context, page);
 
         // Save each app at its new row/col
         for (int i = 0; i < apps.size(); i++) {
@@ -184,15 +186,57 @@ public class AppGridAdapter extends RecyclerView.Adapter<AppGridAdapter.AppViewH
     public void onBindViewHolder(@NonNull AppViewHolder holder, int position) {
         AppInfo app = apps.get(position);
         holder.bind(app, prefs.getFontSizeSp(), prefs.getIconSizeDp(), prefs.isColorBlindEnabled());
-        holder.itemView.setOnClickListener(v -> {
-            if (clickListener != null) clickListener.onAppClick(app);
-        });
-        holder.itemView.setOnLongClickListener(v -> {
+        
+        final Handler holdHandler = new Handler(android.os.Looper.getMainLooper());
+        final Runnable holdRunnable = () -> {
             if (longClickListener != null) {
-                longClickListener.onAppLongClick(app, v);
-                return true;
+                // Big vibration for menu
+                android.os.Vibrator vibrator = (android.os.Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                if (vibrator != null) {
+                    boolean bigVib = prefs.isBigVibrationEnabled();
+                    int duration = bigVib ? 300 : 50;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        vibrator.vibrate(android.os.VibrationEffect.createOneShot(duration, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        vibrator.vibrate(duration);
+                    }
+                }
+                longClickListener.onAppLongClick(app, holder.itemView);
             }
-            return false;
+        };
+        final int touchSlop = android.view.ViewConfiguration.get(context).getScaledTouchSlop();
+        final float[] downX = new float[1];
+        final float[] downY = new float[1];
+        final boolean[] moved = new boolean[1];
+
+        holder.itemView.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    downX[0] = event.getX();
+                    downY[0] = event.getY();
+                    moved[0] = false;
+                    holdHandler.postDelayed(holdRunnable, 3000); // 3 seconds
+                    break;
+                case android.view.MotionEvent.ACTION_MOVE:
+                    float dx = Math.abs(event.getX() - downX[0]);
+                    float dy = Math.abs(event.getY() - downY[0]);
+                    if (dx > touchSlop || dy > touchSlop) {
+                        moved[0] = true;
+                        holdHandler.removeCallbacks(holdRunnable);
+                    }
+                    break;
+                case android.view.MotionEvent.ACTION_UP:
+                    holdHandler.removeCallbacks(holdRunnable);
+                    if (!moved[0]) {
+                        if (clickListener != null) clickListener.onAppClick(app);
+                    }
+                    v.performClick();
+                    break;
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    holdHandler.removeCallbacks(holdRunnable);
+                    break;
+            }
+            return true;
         });
     }
 
@@ -216,16 +260,26 @@ public class AppGridAdapter extends RecyclerView.Adapter<AppGridAdapter.AppViewH
             tvLabel.setText(app.label);
             ivIcon.setImageDrawable(app.icon);
 
-            tvLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSp);
-
             if (highContrast) {
+                tvLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, Math.max(fontSp, 22));
                 tvLabel.setTextColor(android.graphics.Color.WHITE);
                 tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-                itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                tvLabel.setBackground(null);
+                itemView.setBackgroundColor(android.graphics.Color.BLACK);
+                // Hide icon in high contrast to show only labels if requested, 
+                // but user said "on the icon", so maybe keep it.
+                // However, "dont make boxes for icons" and "bold white on black background"
+                // suggests purely text might be better for visibility.
+                // Let's try keeping icon semi-transparent or just hide it.
+                ivIcon.setAlpha(0.2f); 
             } else {
+                tvLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSp);
                 tvLabel.setTextColor(android.graphics.Color.WHITE);
                 tvLabel.setTypeface(null, android.graphics.Typeface.NORMAL);
+                tvLabel.setBackgroundResource(R.drawable.pill_background);
+                tvLabel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#80000000")));
                 itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                ivIcon.setAlpha(1.0f);
             }
 
             int px = dpToPx(itemView.getContext(), iconDp);

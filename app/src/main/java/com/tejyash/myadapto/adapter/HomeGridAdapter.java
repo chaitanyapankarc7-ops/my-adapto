@@ -784,12 +784,8 @@ public class HomeGridAdapter
 
     private void applyHighContrastToWidget(View view, boolean highContrast) {
         if (highContrast) {
-            // Premium high-contrast look: Black block with a thin white border
-            android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-            gd.setColor(android.graphics.Color.BLACK);
-            gd.setCornerRadius(dpToPx(view.getContext(), 24));
-            gd.setStroke(dpToPx(view.getContext(), 1), android.graphics.Color.WHITE);
-            view.setBackground(gd);
+            // Premium high-contrast look: Pure black background, no border boxes
+            view.setBackgroundColor(android.graphics.Color.BLACK);
             
             // Add slight padding
             view.setPadding(dpToPx(view.getContext(), 12), dpToPx(view.getContext(), 12),
@@ -817,13 +813,17 @@ public class HomeGridAdapter
                 tv.setTextColor(android.graphics.Color.WHITE);
                 tv.setTypeface(null, android.graphics.Typeface.BOLD);
                 
-                // Significant increase for high contrast readability
+                // Readable sizes that fit cleanly inside single-block 1x1 widgets
                 if (tv.getId() == R.id.tv_clock_time) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 42);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
                 } else if (tv.getId() == R.id.tv_clock_date) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
                 } else if (tv.getId() == R.id.tv_battery_percent) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                } else if (tv.getId() == R.id.tv_label_battery) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+                } else if (tv.getId() == R.id.tv_weather_temp) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
                 }
             } else if (child instanceof ImageView) {
                 ((ImageView) child).setColorFilter(android.graphics.Color.WHITE);
@@ -843,13 +843,15 @@ public class HomeGridAdapter
                 TextView tv = (TextView) child;
                 // Restore standard sizes
                 if (tv.getId() == R.id.tv_clock_time) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                 } else if (tv.getId() == R.id.tv_clock_date) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
                 } else if (tv.getId() == R.id.tv_label_battery) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
                 } else if (tv.getId() == R.id.tv_battery_percent) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
+                } else if (tv.getId() == R.id.tv_weather_temp) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
                 }
 
                 // If it's the date/status text, it should be slightly transparent
@@ -975,7 +977,7 @@ public class HomeGridAdapter
             touchSlop =
                     ViewConfiguration
                             .get(
-                                    itemView.getContext()
+                                     itemView.getContext()
                             )
                             .getScaledTouchSlop();
 
@@ -993,152 +995,89 @@ public class HomeGridAdapter
         ) {
 
             if (app == null) {
-
-                itemView.setOnTouchListener(
-                        null
-                );
-
-                itemView.setOnClickListener(
-                        null
-                );
-
+                itemView.setOnTouchListener(null);
+                itemView.setOnClickListener(null);
                 return;
             }
 
+            itemView.setOnTouchListener((v, event) -> {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        downX = event.getRawX();
+                        downY = event.getRawY();
+                        moved = false;
+                        dragArmed = false;
+                        cancelPending();
 
-            itemView.setOnTouchListener(
-                    (v, event) -> {
+                        armDragRunnable = () -> {
+                            dragArmed = true;
+                            if (v.getParent() != null) {
+                                v.getParent().requestDisallowInterceptTouchEvent(true);
+                            }
+                            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                            v.setAlpha(0.3f);
+                            startRepositionDrag(app, v);
+                        };
 
-                        switch (
-                                event.getActionMasked()
-                        ) {
+                        handler.postDelayed(armDragRunnable, 500);
 
-
-                            case MotionEvent.ACTION_DOWN:
-
-                                downX =
-                                        event.getRawX();
-
-                                downY =
-                                        event.getRawY();
-
-
-                                moved = false;
-
-                                dragArmed = false;
-
-
-                                cancelPending();
-
-
-                                armDragRunnable =
-                                        () -> {
-                                            dragArmed = true;
-                                            if (v.getParent() != null) {
-                                                v.getParent().requestDisallowInterceptTouchEvent(true);
-                                            }
-                                            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-                                            
-                                            // Make original item semi-transparent during drag for a "premium" feel
-                                            v.setAlpha(0.3f);
-                                            startRepositionDrag(app, v);
-                                        };
-
-
-                                handler.postDelayed(
-                                        armDragRunnable,
-                                        500 // Start drag after 0.5s hold
-                                );
-
-
-                                showMenuRunnable =
-                                        () -> {
-                                            if (!moved && !dragArmed && menuRequestListener != null) {
-                                                v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-                                                menuRequestListener.onShowMenu(app);
-                                            }
-                                        };
-
-
-                                handler.postDelayed(
-                                        showMenuRunnable,
-                                        2000 // 2 seconds for menu
-                                );
-
-
-                                return false; // MUST RETURN FALSE SO PARENT CAN SEE LONG CLICK
-
-
-                            case MotionEvent.ACTION_MOVE:
-
-                                if (moved || dragArmed) {
-                                    return true;
-                                }
-
-
-                                float dx =
-                                        event.getRawX()
-                                                - downX;
-
-
-                                float dy =
-                                        event.getRawY()
-                                                - downY;
-
-
-                                if (
-                                        Math.abs(dx)
-                                                > touchSlop
-                                                ||
-                                                Math.abs(dy)
-                                                        > touchSlop
-                                ) {
-
-                                    moved = true;
-                                    cancelPending();
-                                }
-
-
-                                return true;
-
-
-                            case MotionEvent.ACTION_UP:
-
-                                cancelPending();
-                                v.setAlpha(1.0f); // Reset transparency if drag didn't happen
-
-
-                                if (!moved && !dragArmed) {
-
-                                    if (
-                                            clickListener
-                                                    != null
-                                    ) {
-
-                                        clickListener
-                                                .onAppClick(
-                                                        app
-                                                );
+                        showMenuRunnable = () -> {
+                            if (!moved && !dragArmed && menuRequestListener != null) {
+                                // Big vibration for menu
+                                android.os.Vibrator vibrator = (android.os.Vibrator) v.getContext().getSystemService(android.content.Context.VIBRATOR_SERVICE);
+                                if (vibrator != null) {
+                                    boolean bigVib = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(v.getContext()).isBigVibrationEnabled();
+                                    int duration = bigVib ? 300 : 50;
+                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                        vibrator.vibrate(android.os.VibrationEffect.createOneShot(duration, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                                    } else {
+                                        vibrator.vibrate(duration);
                                     }
                                 }
+                                menuRequestListener.onShowMenu(app);
+                            }
+                        };
 
+                        handler.postDelayed(showMenuRunnable, 3000); // Exactly 3 seconds
+                        return true;
 
-                                return true;
-
-
-                            case MotionEvent.ACTION_CANCEL:
-
-                                cancelPending();
-
-                                return true;
-
-
-                            default:
-
-                                return false;
+                    case MotionEvent.ACTION_MOVE:
+                        if (dragArmed) {
+                            return true;
                         }
-                    }
-            );
+
+                        float dx = event.getRawX() - downX;
+                        float dy = event.getRawY() - downY;
+
+                        if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
+                            moved = true;
+                            cancelPending();
+                            if (v.getParent() != null) {
+                                v.getParent().requestDisallowInterceptTouchEvent(false);
+                            }
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        cancelPending();
+                        v.setAlpha(1.0f);
+
+                        if (!moved && !dragArmed) {
+                            if (clickListener != null) {
+                                clickListener.onAppClick(app);
+                            }
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_CANCEL:
+                        cancelPending();
+                        v.setAlpha(1.0f);
+                        return true;
+
+                    default:
+                        return false;
+                }
+            });
         }
 
 
@@ -1280,6 +1219,7 @@ public class HomeGridAdapter
                 );
                 tvLabel.setTextColor(android.graphics.Color.WHITE);
                 tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+                tvLabel.setBackground(null); // No pill in high contrast
                 itemView.setBackgroundColor(android.graphics.Color.BLACK);
             } else {
                 tvLabel.setTextSize(
@@ -1288,6 +1228,8 @@ public class HomeGridAdapter
                 );
                 tvLabel.setTextColor(android.graphics.Color.WHITE);
                 tvLabel.setTypeface(null, android.graphics.Typeface.NORMAL);
+                tvLabel.setBackgroundResource(R.drawable.pill_background);
+                tvLabel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#80000000")));
                 itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
             }
 
@@ -1310,7 +1252,7 @@ public class HomeGridAdapter
                                 .getCount(
                                         itemView.getContext(),
                                         app.packageName
-                                );
+                                 );
 
 
                 if (count > 0) {
@@ -1628,6 +1570,17 @@ public class HomeGridAdapter
         void setup(Runnable onLongClick) {
             final Handler holdHandler = new Handler(Looper.getMainLooper());
             final Runnable holdRunnable = () -> {
+                // Big vibration for menu
+                android.os.Vibrator vibrator = (android.os.Vibrator) itemView.getContext().getSystemService(android.content.Context.VIBRATOR_SERVICE);
+                if (vibrator != null) {
+                    boolean bigVib = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(itemView.getContext()).isBigVibrationEnabled();
+                    int duration = bigVib ? 300 : 50;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        vibrator.vibrate(android.os.VibrationEffect.createOneShot(duration, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        vibrator.vibrate(duration);
+                    }
+                }
                 if (onLongClick != null) {
                     onLongClick.run();
                 }
@@ -1641,7 +1594,7 @@ public class HomeGridAdapter
                     case MotionEvent.ACTION_DOWN:
                         downX[0] = event.getX();
                         downY[0] = event.getY();
-                        holdHandler.postDelayed(holdRunnable, 2000);
+                        holdHandler.postDelayed(holdRunnable, 3000); // 3 seconds
                         break;
                     case MotionEvent.ACTION_MOVE:
                         float dx = Math.abs(event.getX() - downX[0]);
@@ -1697,11 +1650,6 @@ public class HomeGridAdapter
                                 itemView.getContext()
                         )
                         .getScaledTouchSlop();
-
-
-        final long longPressMs =
-                ViewConfiguration
-                        .getLongPressTimeout();
 
 
         final float[] downX =
@@ -1775,14 +1723,22 @@ public class HomeGridAdapter
 
                             menuRunnable[0] = () -> {
                                 if (!moved[0] && !dragStarted[0] && menuListener != null) {
-                                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                                    // Big vibration for menu
+                                    android.os.Vibrator vibrator = (android.os.Vibrator) v.getContext().getSystemService(android.content.Context.VIBRATOR_SERVICE);
+                                    if (vibrator != null) {
+                                        boolean bigVib = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(v.getContext()).isBigVibrationEnabled();
+                                        int duration = bigVib ? 300 : 50;
+                                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                            vibrator.vibrate(android.os.VibrationEffect.createOneShot(duration, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                                        } else {
+                                            vibrator.vibrate(duration);
+                                        }
+                                    }
                                     menuListener.onShowWidgetMenu(widget.type);
                                 }
                             };
-                            handler.postDelayed(menuRunnable[0], 2000); // 2 seconds for menu
-
-
-                            return false; // MUST RETURN FALSE SO PARENT CAN SEE LONG CLICK
+                            handler.postDelayed(menuRunnable[0], 3000); // Exactly 3 seconds
+                            return true;
 
 
                         case MotionEvent.ACTION_MOVE:
@@ -1811,7 +1767,7 @@ public class HomeGridAdapter
                                             ||
                                             Math.abs(dy)
                                                     > touchSlop
-                            ) {
+                                            ) {
 
                                 moved[0] =
                                         true;
@@ -1819,6 +1775,9 @@ public class HomeGridAdapter
 
                                 if (dragRunnable[0] != null) handler.removeCallbacks(dragRunnable[0]);
                                 if (menuRunnable[0] != null) handler.removeCallbacks(menuRunnable[0]);
+                                if (v.getParent() != null) {
+                                    v.getParent().requestDisallowInterceptTouchEvent(false);
+                                }
                             }
 
 
@@ -1826,14 +1785,11 @@ public class HomeGridAdapter
 
 
                         case MotionEvent.ACTION_UP:
-
-                        case MotionEvent.ACTION_CANCEL:
-
-                            handler.removeCallbacks(dragRunnable[0]);
-                            handler.removeCallbacks(menuRunnable[0]);
+                            if (dragRunnable[0] != null) handler.removeCallbacks(dragRunnable[0]);
+                            if (menuRunnable[0] != null) handler.removeCallbacks(menuRunnable[0]);
                             v.setAlpha(1.0f); // Reset transparency
 
-                            if (event.getAction() == MotionEvent.ACTION_UP && !moved[0] && !dragStarted[0]) {
+                            if (!moved[0] && !dragStarted[0]) {
                                 // Simple tap - toggle selection for resizing
                                 if (selectedWidgetType == widget.type) {
                                     selectedWidgetType = null;
@@ -1842,14 +1798,16 @@ public class HomeGridAdapter
                                 }
                                 notifyDataSetChanged();
                             }
-
-
                             return true;
 
+                        case MotionEvent.ACTION_CANCEL:
+                            if (dragRunnable[0] != null) handler.removeCallbacks(dragRunnable[0]);
+                            if (menuRunnable[0] != null) handler.removeCallbacks(menuRunnable[0]);
+                            v.setAlpha(1.0f); // Reset transparency
+                            return true;
 
                         default:
-
-                            return true;
+                            return false;
                     }
                 }
         );

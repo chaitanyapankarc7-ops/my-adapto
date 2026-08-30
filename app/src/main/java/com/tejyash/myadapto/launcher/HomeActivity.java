@@ -149,4 +149,18 @@ public class HomeActivity extends AppCompatActivity {
                 .addToBackStack(backStackName)
                 .commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        androidx.fragment.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.home_container);
+        if (fragment instanceof HomeFragment && ((HomeFragment) fragment).isPullDownPanelOpen()) {
+            ((HomeFragment) fragment).closePullDownPanel();
+            return;
+        }
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+            return;
+        }
+        // As a custom launcher home screen, do not exit app on back press
+    }
 }

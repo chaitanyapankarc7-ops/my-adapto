@@ -37,8 +37,19 @@ public class AdaptiveFeaturesFragment extends Fragment {
         setupColorBlindSwitch(view);
         setupFlashlightSwitch(view);
         setupVibrateSwitch(view);
+        setupBigVibrationSwitch(view);
+        setupBubbleButton(view);
         
         applyHighContrast(view);
+    }
+
+    private void setupBubbleButton(View root) {
+        View btn = root.findViewById(R.id.btn_setup_bubble);
+        if (btn != null) {
+            btn.setOnClickListener(v -> {
+                startActivity(new android.content.Intent(requireContext(), com.tejyash.myadapto.activity.OverlaySetupActivity.class));
+            });
+        }
     }
 
     private void applyHighContrast(View root) {
@@ -59,6 +70,7 @@ public class AdaptiveFeaturesFragment extends Fragment {
         updateCard(root, R.id.card_color_blind, cardColor, highContrast);
         updateCard(root, R.id.card_flashlight, cardColor, highContrast);
         updateCard(root, R.id.card_vibrate, cardColor, highContrast);
+        updateCard(root, R.id.card_assistant_bubble, cardColor, highContrast);
     }
 
     private void updateCard(View root, int cardId, int color, boolean highContrast) {
@@ -99,6 +111,8 @@ public class AdaptiveFeaturesFragment extends Fragment {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (!isAdded()) return;
+
         if (requestCode == 1001) {
             boolean allGranted = true;
             for (int res : grantResults) {
@@ -109,17 +123,23 @@ public class AdaptiveFeaturesFragment extends Fragment {
             }
             if (allGranted) {
                 accessibilityPrefs.setFlashlightAlertEnabled(true);
-                SwitchMaterial sw = getView().findViewById(R.id.switch_flashlight_alerts);
-                if (sw != null) sw.setChecked(true);
-            } else {
+                View view = getView();
+                if (view != null) {
+                    SwitchMaterial sw = view.findViewById(R.id.switch_flashlight_alerts);
+                    if (sw != null) sw.setChecked(true);
+                }
+            } else if (getContext() != null) {
                 Toast.makeText(requireContext(), "Flashlight alerts require Call and Camera permissions", Toast.LENGTH_SHORT).show();
             }
         } else if (requestCode == 1002) {
             if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 accessibilityPrefs.setVibrateAlertEnabled(true);
-                SwitchMaterial sw = getView().findViewById(R.id.switch_vibrate_alerts);
-                if (sw != null) sw.setChecked(true);
-            } else {
+                View view = getView();
+                if (view != null) {
+                    SwitchMaterial sw = view.findViewById(R.id.switch_vibrate_alerts);
+                    if (sw != null) sw.setChecked(true);
+                }
+            } else if (getContext() != null) {
                 Toast.makeText(requireContext(), "Vibrate alerts require Call permission", Toast.LENGTH_SHORT).show();
             }
         }
@@ -138,5 +158,26 @@ public class AdaptiveFeaturesFragment extends Fragment {
             }
             accessibilityPrefs.setVibrateAlertEnabled(isChecked);
         });
+    }
+
+    private void setupBigVibrationSwitch(View root) {
+        SwitchMaterial sw = root.findViewById(R.id.switch_big_vibration);
+        if (sw != null) {
+            sw.setChecked(accessibilityPrefs.isBigVibrationEnabled());
+            sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                accessibilityPrefs.setBigVibrationEnabled(isChecked);
+                if (isChecked) {
+                    // Give immediate feedback
+                    android.os.Vibrator vibrator = (android.os.Vibrator) requireContext().getSystemService(android.content.Context.VIBRATOR_SERVICE);
+                    if (vibrator != null) {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            vibrator.vibrate(android.os.VibrationEffect.createOneShot(300, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                        } else {
+                            vibrator.vibrate(300);
+                        }
+                    }
+                }
+            });
+        }
     }
 }
