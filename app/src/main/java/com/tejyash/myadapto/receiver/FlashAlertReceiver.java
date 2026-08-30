@@ -69,15 +69,24 @@ public class FlashAlertReceiver extends BroadcastReceiver {
         new Thread(() -> {
             while (isVibrating) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    // Strong "big vibration" pattern: 1 second vibrate, 0.5 second pause
+                    long[] pattern = {0, 1000, 500};
+                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
                 } else {
-                    vibrator.vibrate(500);
+                    long[] pattern = {0, 1000, 500};
+                    vibrator.vibrate(pattern, 0);
                 }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    isVibrating = false;
+                
+                // Keep the thread alive while vibrating (handled by the waveform repeat)
+                // We just need a way to stop it when isVibrating becomes false
+                while (isVibrating) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
                 }
+                vibrator.cancel();
             }
         }).start();
     }

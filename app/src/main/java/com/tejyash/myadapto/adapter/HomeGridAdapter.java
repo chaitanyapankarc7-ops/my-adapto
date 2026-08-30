@@ -1273,17 +1273,19 @@ public class HomeGridAdapter
             );
 
 
-            tvLabel.setTextSize(
-                    TypedValue.COMPLEX_UNIT_SP,
-                    fontSp
-            );
-
-
             if (highContrast) {
+                tvLabel.setTextSize(
+                        TypedValue.COMPLEX_UNIT_SP,
+                        Math.max(fontSp, 22) // Force large font in high contrast
+                );
                 tvLabel.setTextColor(android.graphics.Color.WHITE);
                 tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);
                 itemView.setBackgroundColor(android.graphics.Color.BLACK);
             } else {
+                tvLabel.setTextSize(
+                        TypedValue.COMPLEX_UNIT_SP,
+                        fontSp
+                );
                 tvLabel.setTextColor(android.graphics.Color.WHITE);
                 tvLabel.setTypeface(null, android.graphics.Typeface.NORMAL);
                 itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
