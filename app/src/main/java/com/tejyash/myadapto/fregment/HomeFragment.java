@@ -331,10 +331,13 @@ public class HomeFragment extends Fragment
             RecyclerView rvNotifs = root.findViewById(R.id.rv_quick_notifications);
             TextView tvEmpty = root.findViewById(R.id.tv_no_notifications);
 
+            TextView tvHeaderPill = root.findViewById(R.id.tv_header_pill_title);
+
             if (!hasAccess) {
                 if (layoutPerm != null) layoutPerm.setVisibility(View.VISIBLE);
                 if (rvNotifs != null) rvNotifs.setVisibility(View.GONE);
                 if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+                if (tvHeaderPill != null) tvHeaderPill.setText("Quick Panel");
             } else {
                 if (layoutPerm != null) layoutPerm.setVisibility(View.GONE);
                 List<AdaptoNotificationListenerService.NotificationItem> notifs =
@@ -343,9 +346,11 @@ public class HomeFragment extends Fragment
                 if (notifs.isEmpty()) {
                     if (tvEmpty != null) tvEmpty.setVisibility(View.VISIBLE);
                     if (rvNotifs != null) rvNotifs.setVisibility(View.GONE);
+                    if (tvHeaderPill != null) tvHeaderPill.setText("Quick Panel");
                 } else {
                     if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
                     if (rvNotifs != null) rvNotifs.setVisibility(View.VISIBLE);
+                    if (tvHeaderPill != null) tvHeaderPill.setText("Quick Panel • " + notifs.size() + " new");
                     if (quickNotifAdapter != null) {
                         quickNotifAdapter.setItems(notifs);
                     }
@@ -466,6 +471,7 @@ public class HomeFragment extends Fragment
                     ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).openAppDrawer();
                 }
             });
+            swipeZone.setOnSwipeDownListener(this::openPullDownPanel);
 
             // Still exclude just the bottom system-gesture strip (not the
             // whole screen now) from Android's own "swipe up = go home"
@@ -991,7 +997,8 @@ public class HomeFragment extends Fragment
 
         view.findViewById(R.id.cardSettings).setOnClickListener(v -> {
             if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
-                ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).showSettingsMenu();
+                ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).openOverlay(
+                        new AdaptiveFeaturesFragment(), "adaptive_features");
             }
             bottomSheetDialog.dismiss();
         });

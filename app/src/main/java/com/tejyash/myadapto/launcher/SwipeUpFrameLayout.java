@@ -25,7 +25,12 @@ public class SwipeUpFrameLayout extends FrameLayout {
         void onSwipeUp();
     }
 
-    private OnSwipeUpListener listener;
+    public interface OnSwipeDownListener {
+        void onSwipeDown();
+    }
+
+    private OnSwipeUpListener upListener;
+    private OnSwipeDownListener downListener;
     private final int touchSlop;
     private final int minFlingVelocity;
     private final int minDragDistancePx;
@@ -43,7 +48,11 @@ public class SwipeUpFrameLayout extends FrameLayout {
     }
 
     public void setOnSwipeUpListener(OnSwipeUpListener l) {
-        this.listener = l;
+        this.upListener = l;
+    }
+
+    public void setOnSwipeDownListener(OnSwipeDownListener l) {
+        this.downListener = l;
     }
 
     @Override
@@ -53,13 +62,19 @@ public class SwipeUpFrameLayout extends FrameLayout {
                 downX = ev.getX();
                 downY = ev.getY();
                 intercepting = false;
-                return false; // let children (dock icons) see DOWN so taps still register
+                return false; // let children see DOWN so taps still register
             case MotionEvent.ACTION_MOVE:
                 float dx = ev.getX() - downX;
-                float dy = ev.getY() - downY; // negative = moved up
+                float dy = ev.getY() - downY;
+                // Swipe UP: negative dy
                 if (!intercepting && -dy > touchSlop && Math.abs(dy) > Math.abs(dx)) {
                     intercepting = true;
-                    return true; // proven vertical drag — take over from the child now
+                    return true;
+                }
+                // Swipe DOWN: positive dy (captured in upper 75% of screen)
+                if (!intercepting && dy > touchSlop && Math.abs(dy) > Math.abs(dx) && downY < (getHeight() > 0 ? getHeight() * 0.75f : Float.MAX_VALUE)) {
+                    intercepting = true;
+                    return true;
                 }
                 return false;
             default:
@@ -77,10 +92,6 @@ public class SwipeUpFrameLayout extends FrameLayout {
 
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                // Covers the case where this DOWN reached us directly —
-                // a gesture starting in empty space (no child underneath)
-                // skips onInterceptTouchEvent entirely and comes straight
-                // here, so downX/downY need to be captured here too.
                 downX = ev.getX();
                 downY = ev.getY();
                 return true;
@@ -90,19 +101,18 @@ public class SwipeUpFrameLayout extends FrameLayout {
                 float velocityY = velocityTracker.getYVelocity();
                 float totalDy = ev.getY() - downY;
 
-                // No longer gated on "intercepting" — that flag only ever
-                // gets set from onInterceptTouchEvent, which Android skips
-                // calling for gestures starting in empty space. If we're
-                // receiving these events at all, we own the gesture either
-                // way, so just check the movement directly.
-                boolean farEnough = totalDy <= -minDragDistancePx;
-                boolean fastEnough = -velocityY >= minFlingVelocity;
-                Log.d("SwipeUpFrameLayout", "gesture end: totalDy=" + totalDy
-                        + " velocityY=" + velocityY + " farEnough=" + farEnough
-                        + " fastEnough=" + fastEnough);
-                if ((farEnough || fastEnough) && listener != null) {
-                    Log.d("SwipeUpFrameLayout", "triggering onSwipeUp");
-                    listener.onSwipeUp();
+                // Swipe UP (App Drawer)
+                boolean upFarEnough = totalDy <= -minDragDistancePx;
+                boolean upFastEnough = -velocityY >= minFlingVelocity;
+                if ((upFarEnough || upFastEnough) && upListener != null) {
+                    upListener.onSwipeUp();
+                }
+
+                // Swipe DOWN (Quick Controls & Notifications)
+                boolean downFarEnough = totalDy >= minDragDistancePx;
+                boolean downFastEnough = velocityY >= minFlingVelocity;
+                if ((downFarEnough || downFastEnough) && downListener != null && downY < (getHeight() > 0 ? getHeight() * 0.75f : Float.MAX_VALUE)) {
+                    downListener.onSwipeDown();
                 }
 
                 velocityTracker.recycle();

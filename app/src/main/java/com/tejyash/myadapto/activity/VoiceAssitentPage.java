@@ -104,8 +104,6 @@ public class VoiceAssitentPage extends AppCompatActivity {
 
         startPulseAnimation();
 
-        startPulseAnimation();
-
         httpClient = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)

@@ -78,7 +78,8 @@ public class HomeActivity extends AppCompatActivity {
 
         findViewById(R.id.drawer_handle).setOnClickListener(v -> openAppDrawer());
 
-        findViewById(R.id.fab_settings).setOnClickListener(v -> showSettingsMenu());
+        findViewById(R.id.fab_settings).setOnClickListener(v ->
+                openOverlay(new com.tejyash.myadapto.fregment.AdaptiveFeaturesFragment(), "adaptive_features"));
     }
 
     public void showSettingsMenu() {
@@ -95,7 +96,7 @@ public class HomeActivity extends AppCompatActivity {
 
         view.findViewById(R.id.layoutAccessibility).setOnClickListener(v -> {
             dialog.dismiss();
-            startActivity(new Intent(this, SizeEditingPage.class));
+            openOverlay(new com.tejyash.myadapto.fregment.AdaptiveFeaturesFragment(), "adaptive_features");
         });
 
         view.findViewById(R.id.layoutWallpaper).setOnClickListener(v -> {

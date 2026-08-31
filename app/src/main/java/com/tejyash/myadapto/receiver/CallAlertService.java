@@ -40,17 +40,29 @@ public class CallAlertService extends Service {
             AccessibilityPreferences prefs = AccessibilityPreferences.get(this);
             boolean useFlash = prefs.isFlashlightAlertEnabled();
             boolean useVib = prefs.isBigVibrationEnabled();
+
+            if (!useFlash && !useVib) {
+                isRunning = false;
+                stopSelf();
+                return;
+            }
             
             CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             String flashId = null;
 
-            if (useFlash) {
+            if (useFlash && cameraManager != null) {
                 try {
                     flashId = findFlashCameraId(cameraManager);
                 } catch (Exception e) {
                     Log.e(TAG, "Could not find flashlight", e);
                 }
+            }
+
+            if ((!useFlash || flashId == null) && (!useVib || vibrator == null)) {
+                isRunning = false;
+                stopSelf();
+                return;
             }
 
             while (isRunning) {
