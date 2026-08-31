@@ -31,6 +31,78 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Size Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_size_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#25253B"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Display &amp; Text Size"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Adjust the size of app icons and labels."
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp" />
+
+                    <!-- App Icon Size -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="App Icon Size"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:layout_marginTop="16dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_icon_size"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="0.0"
+                        android:valueTo="3.0"
+                        android:stepSize="1.0"
+                        app:trackColorActive="#2563EB"
+                        app:thumbColor="#2563EB" />
+
+                    <!-- Text Size -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Text Size"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:layout_marginTop="8dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_text_size"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="0.0"
+                        android:valueTo="3.0"
+                        android:stepSize="1.0"
+                        app:trackColorActive="#2563EB"
+                        app:thumbColor="#2563EB" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Color Blind Friendly Themes -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_color_blind"

@@ -12,13 +12,16 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.tejyash.myadapto.R;
+import com.tejyash.myadapto.accessibility.AccessibilityManager;
 import com.tejyash.myadapto.accessibility.AccessibilityPreferences;
 
 public class AdaptiveFeaturesFragment extends Fragment {
 
     private AccessibilityPreferences accessibilityPrefs;
+    private AccessibilityManager accessibilityManager;
 
     public AdaptiveFeaturesFragment() { }
 
@@ -33,8 +36,10 @@ public class AdaptiveFeaturesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         accessibilityPrefs = AccessibilityPreferences.get(requireContext());
+        accessibilityManager = new AccessibilityManager(requireContext());
 
         setupColorBlindSwitch(view);
+        setupSizeSliders(view);
         setupFlashlightSwitch(view);
         setupVibrateSwitch(view);
         setupBigVibrationSwitch(view);
@@ -68,6 +73,7 @@ public class AdaptiveFeaturesFragment extends Fragment {
         }
 
         updateCard(root, R.id.card_color_blind, cardColor, highContrast);
+        updateCard(root, R.id.card_size_settings, cardColor, highContrast);
         updateCard(root, R.id.card_flashlight, cardColor, highContrast);
         updateCard(root, R.id.card_vibrate, cardColor, highContrast);
         updateCard(root, R.id.card_assistant_bubble, cardColor, highContrast);
@@ -79,6 +85,29 @@ public class AdaptiveFeaturesFragment extends Fragment {
             card.setCardBackgroundColor(color);
             card.setStrokeWidth(highContrast ? 4 : 0);
             card.setStrokeColor(android.graphics.Color.WHITE);
+        }
+    }
+
+    private void setupSizeSliders(View root) {
+        Slider iconSlider = root.findViewById(R.id.slider_icon_size);
+        Slider textSlider = root.findViewById(R.id.slider_text_size);
+
+        if (iconSlider != null) {
+            iconSlider.setValue((float) accessibilityPrefs.getIconStep());
+            iconSlider.addOnChangeListener((slider, value, fromUser) -> {
+                if (fromUser) {
+                    accessibilityManager.setIconStep((int) value);
+                }
+            });
+        }
+
+        if (textSlider != null) {
+            textSlider.setValue((float) accessibilityPrefs.getFontStep());
+            textSlider.addOnChangeListener((slider, value, fromUser) -> {
+                if (fromUser) {
+                    accessibilityManager.setFontStep((int) value);
+                }
+            });
         }
     }
 

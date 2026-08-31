@@ -233,20 +233,12 @@ public class HomeGridAdapter
 
         installedApps.clear();
 
-
-        // Load installed apps.
-
-        for (
-                AppInfo app :
-                appManager.loadInstalledApps()
-        ) {
-
-            installedApps.put(
-                    app.packageName,
-                    app
-            );
+        List<AppInfo> cached = appManager != null ? appManager.getCachedApps() : null;
+        if (cached != null) {
+            for (AppInfo app : cached) {
+                installedApps.put(app.packageName, app);
+            }
         }
-
 
         // Clear current grid.
 
@@ -324,6 +316,12 @@ public class HomeGridAdapter
                                 item.packageName
                         );
 
+                if (app == null && appManager != null) {
+                    app = appManager.findApp(item.packageName);
+                    if (app != null) {
+                        installedApps.put(item.packageName, app);
+                    }
+                }
 
                 // App was uninstalled.
 

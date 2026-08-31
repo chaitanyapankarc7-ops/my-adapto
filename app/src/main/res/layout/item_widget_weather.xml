@@ -11,7 +11,7 @@
         android:id="@+id/tv_weather_city"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My City"
+        android:text="California"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:fontFamily="sans-serif-medium"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:text="28°"
         android:textColor="#FFFFFF"
-        android:textSize="36sp"
+        android:textSize="44sp"
         android:fontFamily="sans-serif-light"
         android:includeFontPadding="false"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,12 +45,21 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="Sunny"
-        android:textColor="#B3FFFFFF"
-        android:textSize="12sp"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
         android:fontFamily="sans-serif-medium"
-        android:textAllCaps="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_weather_icon"
+        app:layout_constraintTop_toBottomOf="@+id/iv_weather_icon" />
+
+    <TextView
+        android:id="@+id/tv_weather_hilo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="H:31° L:22°"
+        android:textColor="#B3FFFFFF"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_weather_condition"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

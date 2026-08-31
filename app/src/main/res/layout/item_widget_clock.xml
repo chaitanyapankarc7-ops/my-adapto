@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:text="1:02"
         android:textColor="#FFFFFF"
-        android:textSize="38sp"
+        android:textSize="32sp"
         android:fontFamily="sans-serif-black"
         android:letterSpacing="-0.03"
         android:includeFontPadding="false"
@@ -35,16 +35,17 @@
 
     <TextView
         android:id="@+id/tv_clock_date"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:text="MONDAY, AUG 31"
         android:textColor="#99FFFFFF"
-        android:textSize="11sp"
+        android:textSize="10sp"
         android:fontFamily="sans-serif-medium"
         android:textAllCaps="true"
-        android:letterSpacing="0.08"
+        android:letterSpacing="0.05"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_clock_time" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

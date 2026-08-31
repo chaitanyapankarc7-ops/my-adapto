@@ -18,17 +18,24 @@ public class FlashAlertReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         if (action == null || !action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) return;
 
+        com.tejyash.myadapto.accessibility.AccessibilityPreferences prefs =
+                com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(context);
+        if (!prefs.isFlashlightAlertEnabled() && !prefs.isBigVibrationEnabled()) {
+            return;
+        }
+
         String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
         Log.d(TAG, "Phone state changed: " + state);
 
-        if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
-            // Start the service to handle flashing/vibration
-            Intent serviceIntent = new Intent(context, CallAlertService.class);
-            context.startService(serviceIntent);
-        } else if (TelephonyManager.EXTRA_STATE_IDLE.equals(state) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state)) {
-            // Stop the service when call is answered or hung up
-            Intent serviceIntent = new Intent(context, CallAlertService.class);
-            context.stopService(serviceIntent);
+        Intent serviceIntent = new Intent(context, CallAlertService.class);
+        try {
+            if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
+                context.startService(serviceIntent);
+            } else if (TelephonyManager.EXTRA_STATE_IDLE.equals(state) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state)) {
+                context.stopService(serviceIntent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error managing CallAlertService", e);
         }
     }
 }
