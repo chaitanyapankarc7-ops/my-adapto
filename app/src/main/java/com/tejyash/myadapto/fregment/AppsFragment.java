@@ -90,36 +90,37 @@ public class AppsFragment extends Fragment
         });
     }
 
-    /**
-     * Loads every installed app, guarded so a failure surfaces as a
-     * visible retry state instead of a silently-empty grid — if this
-     * ever throws (some OEM PackageManager quirk, permission issue,
-     * etc.) you'll see it here rather than just a blank screen.
-     */
     private void loadApps() {
-        try {
-            allApps = appManager.loadInstalledApps();
-        } catch (Exception e) {
-            Log.e("AppsFragment", "loadInstalledApps failed", e);
-            allApps = null;
+        List<AppInfo> cached = appManager.getCachedApps();
+        if (cached != null) {
+            allApps = cached;
+            displayApps();
+            return;
         }
 
+        // Cache not ready yet - warm it asynchronously without locking up UI
+        appManager.warmCacheAsync(() -> {
+            if (!isAdded()) return;
+            allApps = appManager.getCachedApps();
+            displayApps();
+        });
+    }
+
+    private void displayApps() {
         if (allApps == null || allApps.isEmpty()) {
-            rv.setVisibility(View.GONE);
-            emptyState.setVisibility(View.VISIBLE);
-            emptyState.setText(allApps == null
-                    ? "Couldn't load apps — tap to retry"
-                    : "No apps found — tap to retry");
-            if (allApps == null) {
-                Toast.makeText(requireContext(),
-                        "Error loading apps — check Logcat for AppsFragment", Toast.LENGTH_LONG).show();
+            if (rv != null) rv.setVisibility(View.GONE);
+            if (emptyState != null) {
+                emptyState.setVisibility(View.VISIBLE);
+                emptyState.setText(allApps == null
+                        ? "Couldn't load apps — tap to retry"
+                        : "No apps found — tap to retry");
             }
             return;
         }
 
-        rv.setVisibility(View.VISIBLE);
-        emptyState.setVisibility(View.GONE);
-        gridAdapter.setApps(allApps);
+        if (rv != null) rv.setVisibility(View.VISIBLE);
+        if (emptyState != null) emptyState.setVisibility(View.GONE);
+        if (gridAdapter != null) gridAdapter.setApps(allApps);
     }
 
     @Override

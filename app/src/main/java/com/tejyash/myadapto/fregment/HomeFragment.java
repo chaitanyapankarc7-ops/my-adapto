@@ -95,6 +95,8 @@ public class HomeFragment extends Fragment
 
         appManager = new AppManager(requireContext());
         accessibilityManager = new AccessibilityManager(requireContext());
+        appManager.warmCacheAsync(this::refreshGrid);
+
         setupDock(view);
         setGreeting(view.findViewById(R.id.home_greeting));
         setupHomeGrid(view);
@@ -105,8 +107,6 @@ public class HomeFragment extends Fragment
         // Use custom hold logic for the background to match the hold requirement
         setupBackgroundHold(view);
         setupBackgroundHold(view.findViewById(R.id.dock_container));
-        
-        appManager.warmCacheAsync(this::refreshGrid);
 
         // Add default Clock widget if Home is empty
         if (GridPreferences.loadAll(requireContext()).isEmpty()) {
@@ -926,10 +926,8 @@ public class HomeFragment extends Fragment
     }
 
     private AppInfo findInstalledApp(String packageName) {
-        for (AppInfo a : appManager.loadInstalledApps()) {
-            if (a.packageName.equals(packageName)) return a;
-        }
-        return null;
+        if (appManager == null || packageName == null) return null;
+        return appManager.findApp(packageName);
     }
 
     private void showEditMenu() {

@@ -126,22 +126,62 @@ public class AppManager {
      * OEM-level filtering. Logs counts from each path either way so a
      * real-device failure is diagnosable from Logcat instead of silent.
      */
+    public List<AppInfo> getCachedApps() {
+        return cachedApps;
+    }
+
+    /**
+     * Finds a single app quickly. If cache is ready, does a fast in-memory lookup.
+     * If cache is not yet ready, resolves ONLY THIS single package from PackageManager
+     * without querying all installed packages on the device, preventing multi-second
+     * main-thread UI stalls.
+     */
+    public AppInfo findApp(String packageName) {
+        if (packageName == null || packageName.isEmpty()) return null;
+
+        List<AppInfo> cached = cachedApps;
+        if (cached != null) {
+            for (AppInfo a : cached) {
+                if (a.packageName.equals(packageName)) return a;
+            }
+            return null;
+        }
+
+        try {
+            PackageManager pm = appContext.getPackageManager();
+            ApplicationInfo ai = pm.getApplicationInfo(packageName, 0);
+            Intent launch = pm.getLaunchIntentForPackage(packageName);
+            return new AppInfo(
+                    ai.loadLabel(pm).toString(),
+                    packageName,
+                    launch != null && launch.getComponent() != null ? launch.getComponent().getClassName() : null,
+                    ai.loadIcon(pm)
+            );
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public List<AppInfo> loadInstalledApps() {
         List<AppInfo> cached = cachedApps; // local copy, cache may be replaced concurrently
         if (cached != null) return cached;
 
-        PackageManager pm = appContext.getPackageManager();
-        List<AppInfo> apps = loadViaQueryIntentActivities(pm);
-        Log.d(TAG, "queryIntentActivities found " + apps.size() + " apps");
+        synchronized (AppManager.class) {
+            if (cachedApps != null) return cachedApps;
 
-        if (apps.size() < 5) { // suspiciously few for a real phone — try the fallback path
-            List<AppInfo> fallback = loadViaGetInstalledApplications(pm);
-            Log.d(TAG, "fallback getInstalledApplications found " + fallback.size() + " apps");
-            if (fallback.size() > apps.size()) apps = fallback;
+            PackageManager pm = appContext.getPackageManager();
+            List<AppInfo> apps = loadViaQueryIntentActivities(pm);
+            Log.d(TAG, "queryIntentActivities found " + apps.size() + " apps");
+
+            if (apps.size() < 5) { // suspiciously few for a real phone — try the fallback path
+                List<AppInfo> fallback = loadViaGetInstalledApplications(pm);
+                Log.d(TAG, "fallback getInstalledApplications found " + fallback.size() + " apps");
+                if (fallback.size() > apps.size()) apps = fallback;
+            }
+
+            cachedApps = apps; // warm the cache so every future call (any thread) is instant
+            return apps;
         }
-
-        cachedApps = apps; // warm the cache so every future call (any thread) is instant
-        return apps;
     }
 
     private List<AppInfo> loadViaQueryIntentActivities(PackageManager pm) {
