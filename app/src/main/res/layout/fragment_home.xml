@@ -43,7 +43,12 @@
             android:layout_marginTop="54dp"
             android:text="Good morning"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="22sp"
+            android:fontFamily="sans-serif-light"
+            android:shadowColor="#80000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="4"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

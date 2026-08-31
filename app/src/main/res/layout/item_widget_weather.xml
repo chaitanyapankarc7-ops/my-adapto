@@ -3,32 +3,54 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
-    android:background="@drawable/widget_background_glass">
+    android:minHeight="110dp"
+    android:padding="16dp"
+    android:background="@drawable/bg_widget_weather">
 
-    <ImageView
-        android:id="@+id/iv_weather_icon"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:src="@drawable/ic_weather_sunny"
-        android:contentDescription="Weather icon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/tv_weather_temp"
+    <TextView
+        android:id="@+id/tv_weather_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="My City"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tv_weather_temp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="24°"
+        android:text="28°"
         android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/iv_weather_icon"
+        android:textSize="36sp"
+        android:fontFamily="sans-serif-light"
+        android:includeFontPadding="false"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_weather_city" />
+
+    <ImageView
+        android:id="@+id/iv_weather_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_weather_sunny"
+        android:contentDescription="Weather"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_weather_condition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Sunny"
+        android:textColor="#B3FFFFFF"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif-medium"
+        android:textAllCaps="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_weather_icon"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

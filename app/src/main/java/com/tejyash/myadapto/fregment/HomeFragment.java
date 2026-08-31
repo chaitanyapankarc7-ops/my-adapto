@@ -912,6 +912,7 @@ public class HomeFragment extends Fragment
         for (GridModel item : GridPreferences.loadAll(requireContext())) {
             if (item.type == type) {
                 item.spanX = newSpan;
+                // Displacement logic if it grows
                 GridPreferences.saveSlot(requireContext(), item);
                 refreshGrid();
                 break;
@@ -955,37 +956,7 @@ public class HomeFragment extends Fragment
         });
 
         view.findViewById(R.id.cardWidgets).setOnClickListener(v -> {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Add Widget")
-                    .setItems(new String[]{"Clock", "Battery", "Weather", "More Tools..."},
-                            (dialog, which) -> {
-                                if (which == 3) {
-                                    if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
-                                        ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).openOverlay(new WidgetsFragment(), "widgets");
-                                    }
-                                } else {
-                                    LauncherItemType type;
-                                    if (which == 0)      type = LauncherItemType.CLOCK;
-                                    else if (which == 1) type = LauncherItemType.BATTERY;
-                                    else                type = LauncherItemType.WEATHER;
-
-                                    int currentPage = pager != null ? pager.getCurrentItem() : 0;
-                                    int[] slot = GridPreferences.findFirstEmptySlotOnPage(requireContext(), currentPage);
-                                    
-                                    if (slot != null) {
-                                        GridPreferences.placeWidget(requireContext(), type, currentPage, slot[0], slot[1]);
-                                        Toast.makeText(requireContext(), type.name() + " added", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        // Page is full, find first anywhere
-                                        int[] globalSlot = GridPreferences.findFirstEmptySlot(requireContext());
-                                        if (globalSlot != null) {
-                                            GridPreferences.placeWidget(requireContext(), type, globalSlot[0], globalSlot[1], globalSlot[2]);
-                                        }
-                                    }
-                                    refreshGrid();
-                                }
-                            })
-                    .show();
+            showAddWidgetDialog();
             bottomSheetDialog.dismiss();
         });
 
@@ -997,6 +968,56 @@ public class HomeFragment extends Fragment
         });
 
         bottomSheetDialog.show();
+    }
+
+    private void showAddWidgetDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.TransparentDialog)
+                .create();
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_widget, null);
+        dialog.setView(view);
+
+        view.findViewById(R.id.btn_add_clock).setOnClickListener(v -> {
+            addWidgetToGrid(LauncherItemType.CLOCK);
+            dialog.dismiss();
+        });
+
+        view.findViewById(R.id.btn_add_battery).setOnClickListener(v -> {
+            addWidgetToGrid(LauncherItemType.BATTERY);
+            dialog.dismiss();
+        });
+
+        view.findViewById(R.id.btn_add_weather).setOnClickListener(v -> {
+            addWidgetToGrid(LauncherItemType.WEATHER);
+            dialog.dismiss();
+        });
+
+        view.findViewById(R.id.btn_more_tools).setOnClickListener(v -> {
+            if (getActivity() instanceof com.tejyash.myadapto.launcher.HomeActivity) {
+                ((com.tejyash.myadapto.launcher.HomeActivity) getActivity()).openOverlay(new WidgetsFragment(), "widgets");
+            }
+            dialog.dismiss();
+        });
+
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+    }
+
+    private void addWidgetToGrid(LauncherItemType type) {
+        int currentPage = pager != null ? pager.getCurrentItem() : 0;
+        int[] slot = GridPreferences.findFirstEmptySlotOnPage(requireContext(), currentPage);
+        
+        if (slot != null) {
+            GridPreferences.placeWidget(requireContext(), type, currentPage, slot[0], slot[1]);
+            Toast.makeText(requireContext(), type.name() + " added", Toast.LENGTH_SHORT).show();
+        } else {
+            int[] globalSlot = GridPreferences.findFirstEmptySlot(requireContext());
+            if (globalSlot != null) {
+                GridPreferences.placeWidget(requireContext(), type, globalSlot[0], globalSlot[1], globalSlot[2]);
+            }
+        }
+        refreshGrid();
     }
 
     private void setupBackgroundHold(View v) {

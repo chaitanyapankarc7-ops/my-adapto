@@ -593,18 +593,14 @@ public class GridPreferences {
                 type
         );
         
-        // Default widget width is 1 (occupies one block)
-        widget.spanX = 1;
-
+        // Default widget width is 2 (spans two columns for a modern card look)
+        int columns = getColumns(ctx);
+        widget.spanX = Math.min(2, columns);
 
         // Displacement logic
         bumpOccupantsForItem(ctx, widget);
 
-
-        saveSlot(
-                ctx,
-                widget
-        );
+        saveSlot(ctx, widget);
     }
 
     /**

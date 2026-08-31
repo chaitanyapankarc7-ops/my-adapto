@@ -813,17 +813,25 @@ public class HomeGridAdapter
                 tv.setTextColor(android.graphics.Color.WHITE);
                 tv.setTypeface(null, android.graphics.Typeface.BOLD);
                 
-                // Readable sizes that fit cleanly inside single-block 1x1 widgets
+                // Readable sizes for premium widgets
                 if (tv.getId() == R.id.tv_clock_time) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
                 } else if (tv.getId() == R.id.tv_clock_date) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
                 } else if (tv.getId() == R.id.tv_battery_percent) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 36);
                 } else if (tv.getId() == R.id.tv_label_battery) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                } else if (tv.getId() == R.id.tv_battery_status) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
                 } else if (tv.getId() == R.id.tv_weather_temp) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 48);
+                } else if (tv.getId() == R.id.tv_weather_city) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                } else if (tv.getId() == R.id.tv_weather_condition) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+                } else if (tv.getId() == R.id.tv_weather_hilo) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
                 }
             } else if (child instanceof ImageView) {
                 ((ImageView) child).setColorFilter(android.graphics.Color.WHITE);
@@ -841,23 +849,32 @@ public class HomeGridAdapter
             View child = group.getChildAt(m);
             if (child instanceof TextView) {
                 TextView tv = (TextView) child;
-                // Restore standard sizes
+                // Restore standard premium sizes for normal/high-contrast look
                 if (tv.getId() == R.id.tv_clock_time) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
                 } else if (tv.getId() == R.id.tv_clock_date) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
                 } else if (tv.getId() == R.id.tv_label_battery) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
                 } else if (tv.getId() == R.id.tv_battery_percent) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 36);
+                } else if (tv.getId() == R.id.tv_battery_status) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
                 } else if (tv.getId() == R.id.tv_weather_temp) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 48);
+                } else if (tv.getId() == R.id.tv_weather_city) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                } else if (tv.getId() == R.id.tv_weather_condition) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+                } else if (tv.getId() == R.id.tv_weather_hilo) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
                 }
 
-                // If it's the date/status text, it should be slightly transparent
-                if (child.getId() == R.id.tv_clock_date) {
+                // If it's secondary text, it should be slightly transparent
+                if (child.getId() == R.id.tv_clock_date || child.getId() == R.id.tv_weather_condition || 
+                    child.getId() == R.id.tv_weather_hilo || child.getId() == R.id.tv_battery_status) {
                     tv.setTextColor(android.graphics.Color.parseColor("#B3FFFFFF"));
-                    tv.setTypeface(null, android.graphics.Typeface.NORMAL);
+                    tv.setTypeface(null, android.graphics.Typeface.BOLD);
                 } else {
                     tv.setTextColor(android.graphics.Color.WHITE);
                     tv.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -1304,6 +1321,7 @@ public class HomeGridAdapter
 
 
         final TextView tvTime;
+        final TextView tvPeriod;
         final TextView tvDate;
 
 
@@ -1339,6 +1357,8 @@ public class HomeGridAdapter
 
             tvTime =
                     itemView.findViewById(R.id.tv_clock_time);
+            tvPeriod =
+                    itemView.findViewById(R.id.tv_clock_period);
             tvDate =
                     itemView.findViewById(R.id.tv_clock_date);
         }
@@ -1372,11 +1392,22 @@ public class HomeGridAdapter
 
             Date now = new Date();
 
-            String time =
+            String fullTime =
                     new SimpleDateFormat(
                             "h:mm a",
                             Locale.getDefault()
                     ).format(now);
+
+            // Split into "1:02" and "AM"
+            String time = fullTime;
+            String period = "";
+            if (fullTime.length() > 3) {
+                int lastSpace = fullTime.lastIndexOf(' ');
+                if (lastSpace != -1) {
+                    time = fullTime.substring(0, lastSpace);
+                    period = fullTime.substring(lastSpace + 1);
+                }
+            }
 
             String date =
                     new SimpleDateFormat(
@@ -1386,6 +1417,7 @@ public class HomeGridAdapter
 
 
             if (tvTime != null) tvTime.setText(time);
+            if (tvPeriod != null) tvPeriod.setText(period);
             if (tvDate != null) tvDate.setText(date);
         }
 
@@ -1422,7 +1454,7 @@ public class HomeGridAdapter
             tvPercent =
                     itemView.findViewById(R.id.tv_battery_percent);
             tvStatus =
-                    null; // Removed from single-block layout
+                    itemView.findViewById(R.id.tv_battery_status);
             pbBatteryCircle =
                     itemView.findViewById(R.id.pb_battery_circle);
         }
@@ -1508,7 +1540,7 @@ public class HomeGridAdapter
                 pbBatteryCircle.setProgress(percent);
             }
             if (tvStatus != null) {
-                tvStatus.setText(charging ? "Charging" : "On Battery");
+                tvStatus.setText(charging ? "Charging" : "Healthy");
             }
         }
     }
@@ -1524,6 +1556,8 @@ public class HomeGridAdapter
 
         final TextView tvTemp;
         final TextView tvCondition;
+        final TextView tvCity;
+        final TextView tvHiLo;
 
 
         WeatherViewHolder(
@@ -1536,14 +1570,20 @@ public class HomeGridAdapter
             tvTemp =
                     itemView.findViewById(R.id.tv_weather_temp);
             tvCondition =
-                    null; // Removed from single-block layout
+                    itemView.findViewById(R.id.tv_weather_condition);
+            tvCity =
+                    itemView.findViewById(R.id.tv_weather_city);
+            tvHiLo =
+                    itemView.findViewById(R.id.tv_weather_hilo);
         }
 
 
         void bind() {
 
-            if (tvTemp != null) tvTemp.setText("28°C");
+            if (tvTemp != null) tvTemp.setText("28°");
             if (tvCondition != null) tvCondition.setText("Sunny");
+            if (tvCity != null) tvCity.setText("California");
+            if (tvHiLo != null) tvHiLo.setText("H:31° L:22°");
 
             itemView.setContentDescription(
                     "Weather widget"

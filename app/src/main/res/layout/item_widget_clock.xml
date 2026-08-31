@@ -3,35 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
+    android:minHeight="110dp"
+    android:padding="20dp"
     android:background="@drawable/widget_background_glass">
 
     <TextView
         android:id="@+id/tv_clock_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="10:45"
+        android:text="1:02"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:fontFamily="sans-serif-medium"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/tv_clock_date"
+        android:textSize="38sp"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="-0.03"
+        android:includeFontPadding="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_clock_period"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="6dp"
+        android:text="AM"
+        android:textColor="#CCFFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_clock_time"
+        app:layout_constraintStart_toEndOf="@+id/tv_clock_time" />
 
     <TextView
         android:id="@+id/tv_clock_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Mon, 12 Oct"
-        android:textColor="#B3FFFFFF"
-        android:textSize="9sp"
+        android:layout_marginTop="2dp"
+        android:text="MONDAY, AUG 31"
+        android:textColor="#99FFFFFF"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
         android:textAllCaps="true"
-        app:layout_constraintTop_toBottomOf="@id/tv_clock_time"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:letterSpacing="0.08"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tv_clock_time" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

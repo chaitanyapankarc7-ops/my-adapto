@@ -206,7 +206,7 @@
                         android:id="@+id/textView16"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="High Contrast"
+                        android:text="Color Blind Friendly"
                         android:textColor="#FFFFFF"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -216,7 +216,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Pure black &amp; white layout"
+                        android:text="Optimized high-contrast colors"
                         android:textColor="#A0AEC0"
                         android:textSize="13sp" />
                 </LinearLayout>

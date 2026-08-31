@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.tejyash.myadapto.launcher.LauncherItemType;
 import com.tejyash.myadapto.manager.AppManager;
 
 public class HomePagesAdapter
@@ -190,16 +189,7 @@ public class HomePagesAdapter
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                boolean highContrast = com.tejyash.myadapto.accessibility.AccessibilityPreferences.get(context).isColorBlindEnabled();
-                if (highContrast) {
-                    int viewType = gridAdapter.getItemViewType(position);
-                    if (viewType == LauncherItemType.CLOCK.ordinal() ||
-                        viewType == LauncherItemType.BATTERY.ordinal() ||
-                        viewType == LauncherItemType.WEATHER.ordinal()) {
-                        return 2; // Span 2 blocks in high contrast for visibility
-                    }
-                }
-                return 1;
+                return gridAdapter.getSpanSize(position);
             }
         });
 
