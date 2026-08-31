@@ -38,6 +38,7 @@ public class AdaptiveFeaturesFragment extends Fragment {
         accessibilityPrefs = AccessibilityPreferences.get(requireContext());
         accessibilityManager = new AccessibilityManager(requireContext());
 
+        setupSeniorModeSwitch(view);
         setupColorBlindSwitch(view);
         setupSizeSliders(view);
         setupFlashlightSwitch(view);
@@ -73,6 +74,7 @@ public class AdaptiveFeaturesFragment extends Fragment {
         }
 
         updateCard(root, R.id.card_color_blind, cardColor, highContrast);
+        updateCard(root, R.id.card_senior_mode, cardColor, highContrast);
         updateCard(root, R.id.card_size_settings, cardColor, highContrast);
         updateCard(root, R.id.card_flashlight, cardColor, highContrast);
         updateCard(root, R.id.card_vibrate, cardColor, highContrast);
@@ -85,6 +87,46 @@ public class AdaptiveFeaturesFragment extends Fragment {
             card.setCardBackgroundColor(color);
             card.setStrokeWidth(highContrast ? 4 : 0);
             card.setStrokeColor(android.graphics.Color.WHITE);
+        }
+    }
+
+    private void setupSeniorModeSwitch(View root) {
+        SwitchMaterial sw = root.findViewById(R.id.switch_senior_mode);
+        if (sw != null) {
+            sw.setChecked(accessibilityPrefs.isSeniorModeEnabled());
+            sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                accessibilityPrefs.setSeniorModeEnabled(isChecked);
+                
+                View v = getView();
+                if (isChecked) {
+                    // Apply senior-friendly presets (Size ONLY)
+                    accessibilityManager.setIconStep(3); // Largest icons
+                    accessibilityManager.setFontStep(3); // Largest text
+                    
+                    // Update sliders in UI
+                    if (v != null) {
+                        Slider iconSlider = v.findViewById(R.id.slider_icon_size);
+                        if (iconSlider != null) iconSlider.setValue(3.0f);
+                        
+                        Slider textSlider = v.findViewById(R.id.slider_text_size);
+                        if (textSlider != null) textSlider.setValue(3.0f);
+                    }
+                } else {
+                    // Revert to Normal sizes (Step 1)
+                    accessibilityManager.setIconStep(1); 
+                    accessibilityManager.setFontStep(1);
+                    
+                    // Update sliders in UI
+                    if (v != null) {
+                        Slider iconSlider = v.findViewById(R.id.slider_icon_size);
+                        if (iconSlider != null) iconSlider.setValue(1.0f);
+                        
+                        Slider textSlider = v.findViewById(R.id.slider_text_size);
+                        if (textSlider != null) textSlider.setValue(1.0f);
+                    }
+                }
+                applyHighContrast(root);
+            });
         }
     }
 

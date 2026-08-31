@@ -64,6 +64,10 @@ public class AccessibilityPreferences {
         return prefs.getBoolean(Constants.KEY_BIG_VIBRATION, true);
     }
 
+    public boolean isSeniorModeEnabled() {
+        return prefs.getBoolean(Constants.KEY_SENIOR_MODE, false);
+    }
+
     public void setColorBlindEnabled(boolean enabled) {
         prefs.edit().putBoolean(Constants.KEY_COLOR_BLIND, enabled).apply();
         notifyListener();
@@ -81,6 +85,11 @@ public class AccessibilityPreferences {
 
     public void setBigVibrationEnabled(boolean enabled) {
         prefs.edit().putBoolean(Constants.KEY_BIG_VIBRATION, enabled).apply();
+        notifyListener();
+    }
+
+    public void setSeniorModeEnabled(boolean enabled) {
+        prefs.edit().putBoolean(Constants.KEY_SENIOR_MODE, enabled).apply();
         notifyListener();
     }
 
